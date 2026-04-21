@@ -1,23 +1,29 @@
 export default async function handler(req, res) {
-  const url = req.url
-  const apiPath = url.replace(/^\/api\/proxy/, '').replace(/^\/api/, '')
+  const apiPath = req.url.replace(/^\/api/, '')
   const target = `https://gb.starthing.com/gw/merchant${apiPath}`
+
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', '*')
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end()
+  }
 
   try {
     const response = await fetch(target, {
-      method: req.method,
+      method: 'GET',
       headers: {
-        'Ram-System': '1144269879315968000',
-        'Ram-Tenant': '1405022612241514496',
-        'Ram-Token': 'df9a6092108647649aed55ce0e51f55b1495927437289426944',
+        'Ram-System': process.env.VITE_RAM_SYSTEM,
+        'Ram-Tenant': process.env.VITE_RAM_TENANT,
+        'Ram-Token': process.env.VITE_RAM_TOKEN,
         'X-Accept-Language': 'es',
         'Content-Type': 'application/json',
       },
     })
     const data = await response.json()
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    res.status(200).json(data)
-  } catch(e) {
-    res.status(500).json({ error: e.message })
+    return res.status(200).json(data)
+  } catch (e) {
+    return res.status(500).json({ error: e.message })
   }
 }
