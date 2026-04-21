@@ -2,14 +2,12 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 const isLocal = window.location.hostname === 'localhost'
-const BASE = isLocal
-  ? '/api/gw/merchant'
-  : 'https://gb.starthing.com/gw/merchant'
+const BASE = isLocal ? '/api/gw/merchant' : 'https://gb.starthing.com/gw/merchant'
 
 export const HEADERS = {
-  'Ram-System': '1144269879315968000',
-  'Ram-Tenant': '1405022612241514496',
-  'Ram-Token': 'df9a6092108647649aed55ce0e51f55b1495927437289426944',
+  'Ram-System': import.meta.env.VITE_RAM_SYSTEM || '1144269879315968000',
+  'Ram-Tenant': import.meta.env.VITE_RAM_TENANT || '1405022612241514496',
+  'Ram-Token': import.meta.env.VITE_RAM_TOKEN || 'df9a6092108647649aed55ce0e51f55b1495927437289426944',
   'X-Accept-Language': 'es',
 }
 
