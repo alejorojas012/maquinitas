@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
-const BASE = '/api/gw/merchant'
+const isLocal = window.location.hostname === 'localhost'
+const BASE = isLocal
+  ? '/api/gw/merchant'
+  : 'https://gb.starthing.com/gw/merchant'
 
 export const HEADERS = {
   'Ram-System': '1144269879315968000',
