@@ -5,6 +5,17 @@ export function today() {
   return new Date().toISOString().slice(0, 10)
 }
 
+export function yesterday() {
+  const d = new Date()
+  d.setDate(d.getDate() - 1)
+  return d.toISOString().slice(0, 10)
+}
+
+export function firstDayOfMonth() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+}
+
 export function useMachines() {
   const [machines, setMachines] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -38,7 +49,7 @@ export function useStats(dateFrom: string, dateTo: string) {
     setError(null)
     try {
       const r = await axios.get(
-        `/api/gw/merchant/statistics/store?current=1&size=50&onlyIncomeData=false&orderMode=INCOME&dateFrom=${dateFrom}&dateTo=${dateTo}`
+        `/api/gw/merchant/statistics/store?current=1&size=50&onlyIncomeData=false&orderMode=INCOME&beginDate=${dateFrom}&endDate=${dateTo}`
       )
       setStats(r.data?.body?.records || [])
     } catch (e: any) {
@@ -49,4 +60,49 @@ export function useStats(dateFrom: string, dateTo: string) {
 
   useEffect(() => { load() }, [dateFrom, dateTo])
   return { stats, loading, error, reload: load }
+}
+
+export function useSummary(dateFrom: string, dateTo: string) {
+  const [summary, setSummary] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function load() {
+    setLoading(true)
+    setError(null)
+    try {
+      const r = await axios.get(
+        `/api/gw/merchant/statistics/summary?current=1&size=10&storeShowType=down&screenShowType=down&onlyIncomeData=false&orderMode=INCOME&beginDate=${dateFrom}&endDate=${dateTo}`
+      )
+      setSummary(r.data?.body || null)
+    } catch (e: any) {
+      setError(e.message)
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [dateFrom, dateTo])
+  return { summary, loading, error, reload: load }
+}
+
+export function useBestStore(dateFrom: string, dateTo: string) {
+  const [best, setBest] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+
+  async function load() {
+    setLoading(true)
+    try {
+      const r = await axios.get(
+        `/api/gw/merchant/statistics/store?current=1&size=1&onlyIncomeData=false&orderMode=INCOME&beginDate=${dateFrom}&endDate=${dateTo}`
+      )
+      const records = r.data?.body?.records || []
+      setBest(records[0] || null)
+    } catch {
+      setBest(null)
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [dateFrom, dateTo])
+  return { best, loading }
 }
