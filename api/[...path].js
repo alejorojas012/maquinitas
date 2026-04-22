@@ -10,13 +10,21 @@ export default async function handler(req, res) {
     return res.status(200).end()
   }
 
+  const token = process.env.RAM_TOKEN
+  const system = process.env.RAM_SYSTEM
+  const tenant = process.env.RAM_TENANT
+
+  if (!token) {
+    return res.status(500).json({ error: 'Token no configurado', vars: Object.keys(process.env).filter(k => k.includes('RAM')) })
+  }
+
   try {
     const response = await fetch(target, {
       method: 'GET',
       headers: {
-        'Ram-System': process.env.RAM_SYSTEM,
-        'Ram-Tenant': process.env.RAM_TENANT,
-        'Ram-Token': process.env.RAM_TOKEN,
+        'Ram-System': system,
+        'Ram-Tenant': tenant,
+        'Ram-Token': token,
         'X-Accept-Language': 'es',
         'Content-Type': 'application/json',
       },
