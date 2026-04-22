@@ -5,17 +5,20 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
 
   try {
-    const response = await fetch('https://gb.starthing.com/gw/merchant/login', {
+    const response = await fetch('https://gb.starthing.com/gw/merchant/common/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-Accept-Language': 'es',
-        'Ram-System': '1144269879315968000',
+        'Ram-System': process.env.RAM_SYSTEM,
+        'Ram-Tenant': process.env.RAM_TENANT,
+        'Referer': 'https://gb.starthing.com/',
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36',
       },
       body: JSON.stringify({
-        account: '3046504500',
-        password: 'f8869f779d3a4d096324d1a4f60d4b30',
-        _notSave_password: '119119ch',
+        account: process.env.ST_ACCOUNT,
+        password: process.env.ST_PASSWORD,
+        _notSave_password: process.env.ST_PASSWORD_PLAIN,
         clientType: 'h5',
         companyCode: 'STAR_THING',
         productCode: 'EQUIPMENT_MANAGEMENT_H5',

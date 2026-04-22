@@ -1,6 +1,6 @@
 async function autoLogin() {
   try {
-    const response = await fetch('https://gb.starthing.com/gw/merchant/login', {
+    const response = await fetch('https://gb.starthing.com/gw/merchant/common/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
