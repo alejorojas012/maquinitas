@@ -1,3 +1,8 @@
+const ANON_TOKEN = '26b1d833b6304df8abf546d66e38f2221496452109635682304'
+
+let cachedToken = null
+let tokenExpiry = 0
+
 async function doLogin() {
   const loginRes = await fetch('https://gb.starthing.com/gw/merchant/common/login', {
     method: 'POST',
@@ -5,6 +10,7 @@ async function doLogin() {
       'Content-Type': 'application/json',
       'Ram-System': process.env.RAM_SYSTEM,
       'Ram-Tenant': process.env.RAM_TENANT,
+      'Ram-Token': ANON_TOKEN,
       'X-Accept-Language': 'es',
     },
     body: JSON.stringify({
@@ -15,13 +21,11 @@ async function doLogin() {
       productCode: 'EQUIPMENT_MANAGEMENT_H5',
       serviceCode: 'MCH_LOGIN',
       userTypeCode: 'MERCHANT',
+      verifyCode: 47712,
     }),
   })
   return await loginRes.json()
 }
-
-let cachedToken = null
-let tokenExpiry = 0
 
 async function getToken() {
   if (cachedToken && Date.now() < tokenExpiry) return cachedToken
@@ -40,7 +44,6 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', '*')
   if (req.method === 'OPTIONS') return res.status(200).end()
 
-  // Endpoint de diagnóstico
   if (req.url.includes('/api/debug-login')) {
     const result = await doLogin()
     return res.status(200).json(result)
