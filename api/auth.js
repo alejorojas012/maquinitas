@@ -10,7 +10,7 @@ export default async function handler(req, res) {
       headers: {
         'Content-Type': 'application/json',
         'X-Accept-Language': 'es',
-        'Ram-System': '114426987931596800',
+        'Ram-System': '1144269879315968000',
       },
       body: JSON.stringify({
         account: '3046504500',

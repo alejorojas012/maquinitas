@@ -33,7 +33,7 @@ async function callAPI(target, token, tenantId) {
   return await fetch(target, {
     method: 'GET',
     headers: {
-      'Ram-System': '114426987931596800',
+      'Ram-System': '1144269879315968000',
       'Ram-Tenant': tenantId || '140502261224151449',
       'Ram-Token': token,
       'X-Accept-Language': 'es',
