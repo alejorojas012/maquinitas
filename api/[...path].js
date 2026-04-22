@@ -55,9 +55,18 @@ export default async function handler(req, res) {
   // Primer intento con login automático
   let { token, tenantId } = await autoLogin()
 
-  if (!token) {
-    return res.status(401).json({ error: 'No se pudo obtener token de autenticación' })
-  }
+ if (!token) {
+  return res.status(200).json({ 
+    debug: 'autoLogin falló', 
+    envVars: {
+      hasSystem: !!process.env.RAM_SYSTEM,
+      hasTenant: !!process.env.RAM_TENANT,
+      hasAccount: !!process.env.ST_ACCOUNT,
+      hasPassword: !!process.env.ST_PASSWORD,
+      hasPasswordPlain: !!process.env.ST_PASSWORD_PLAIN,
+    }
+  })
+}
 
   try {
     const response = await callAPI(target, token, tenantId)
