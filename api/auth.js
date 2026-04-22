@@ -36,7 +36,11 @@ export default async function handler(req, res) {
         tenantId: data.body.tenantId,
       })
     } else {
-      return res.status(401).json({ error: 'Login fallido', detail: data })
+     return res.status(401).json({ error: 'Login fallido', detail: data, sentBody: {
+  account: process.env.ST_ACCOUNT,
+  password: process.env.ST_PASSWORD,
+  plain: process.env.ST_PASSWORD_PLAIN,
+}})
     }
   } catch (e) {
     return res.status(500).json({ error: e.message })
