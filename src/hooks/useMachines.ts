@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
-const BASE = '/api/gw/merchant'
-
-export const HEADERS = {
-  'Ram-System': import.meta.env.VITE_RAM_SYSTEM || '1144269879315968000',
-  'Ram-Tenant': import.meta.env.VITE_RAM_TENANT || '1405022612241514496',
-  'Ram-Token': import.meta.env.VITE_RAM_TOKEN || 'df9a6092108647649aed55ce0e51f55b1495927437289426944',
-  'X-Accept-Language': 'es',
-}
-
 export function today() {
   return new Date().toISOString().slice(0, 10)
+}
+
+function getHeaders() {
+  return {
+    'Ram-System': localStorage.getItem('ram-system') || '1144269879315968000',
+    'Ram-Tenant': localStorage.getItem('ram-tenant') || '1405022612241514496',
+    'Ram-Token': localStorage.getItem('ram-token') || '',
+    'X-Accept-Language': 'es',
+  }
 }
 
 export function useMachines() {
@@ -24,8 +24,8 @@ export function useMachines() {
     setError(null)
     try {
       const r = await axios.get(
-        `${BASE}/equipmentManage/equipmentPage?current=1&size=50&online=&storeShowType=down`,
-        { headers: HEADERS }
+        `/api/gw/merchant/equipmentManage/equipmentPage?current=1&size=50&online=&storeShowType=down`,
+        { headers: getHeaders() }
       )
       setMachines(r.data?.body?.records || [])
     } catch (e: any) {
@@ -48,8 +48,8 @@ export function useStats(dateFrom: string, dateTo: string) {
     setError(null)
     try {
       const r = await axios.get(
-        `${BASE}/statistics/store?current=1&size=50&onlyIncomeData=false&orderMode=INCOME&beginDate=${dateFrom}&endDate=${dateTo}`,
-        { headers: HEADERS }
+        `/api/gw/merchant/statistics/store?current=1&size=50&onlyIncomeData=false&orderMode=INCOME&beginDate=${dateFrom}&endDate=${dateTo}`,
+        { headers: getHeaders() }
       )
       setStats(r.data?.body?.records || [])
     } catch (e: any) {
