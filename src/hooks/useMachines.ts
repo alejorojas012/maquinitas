@@ -5,10 +5,6 @@ export function today() {
   return new Date().toISOString().slice(0, 10)
 }
 
-function getToken() {
-  return localStorage.getItem('ram-token') || ''
-}
-
 export function useMachines() {
   const [machines, setMachines] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -19,7 +15,7 @@ export function useMachines() {
     setError(null)
     try {
       const r = await axios.get(
-        `/api/gw/merchant/equipmentManage/equipmentPage?current=1&size=50&online=&storeShowType=down&_token=${getToken()}`
+        '/api/gw/merchant/equipmentManage/equipmentPage?current=1&size=50&online=&storeShowType=0'
       )
       setMachines(r.data?.body?.records || [])
     } catch (e: any) {
@@ -42,7 +38,7 @@ export function useStats(dateFrom: string, dateTo: string) {
     setError(null)
     try {
       const r = await axios.get(
-        `/api/gw/merchant/statistics/store?current=1&size=50&onlyIncomeData=false&orderMode=INCOME&beginDate=${dateFrom}&endDate=${dateTo}&_token=${getToken()}`
+        `/api/gw/merchant/statistics/store?current=1&size=50&onlyIncomeData=false&orderMode=INCOME&dateFrom=${dateFrom}&dateTo=${dateTo}`
       )
       setStats(r.data?.body?.records || [])
     } catch (e: any) {
