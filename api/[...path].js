@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
 
   const url = new URL(req.url, 'http://localhost')
-  const cleanPath = url.pathname.replace(/^\/api/, '') + (url.search || '')
+  const cleanPath = url.pathname.replace(/^\/api\/gw\/merchant/, '') + (url.search || '')
   const target = `https://gb.starthing.com/gw/merchant${cleanPath}`
 
   let { token, tenantId } = await autoLogin()
@@ -41,7 +41,18 @@ export default async function handler(req, res) {
   try {
     const response = await callAPI(target, token, tenantId)
     const data = await response.json()
-    return res.status(200).json({ debug: true, target, token: token.slice(0,10) + '...', tenantId, data })
+
+    if (data?.code === '0000401') {
+      const retry = await autoLogin()
+      if (retry.token) {
+        const response2 = await callAPI(target, retry.token, retry.tenantId)
+        const data2 = await response2.json()
+        return res.status(200).json(data2)
+      }
+      return res.status(401).json({ error: 'Token inválido después de reintento' })
+    }
+
+    return res.status(200).json(data)
   } catch (e) {
     return res.status(500).json({ error: e.message })
   }
