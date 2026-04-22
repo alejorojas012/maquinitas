@@ -5,12 +5,15 @@ async function autoLogin() {
       headers: {
         'Content-Type': 'application/json',
         'X-Accept-Language': 'es',
-        'Ram-System': '114426987931596800',
+        'Ram-System': process.env.RAM_SYSTEM,
+        'Ram-Tenant': process.env.RAM_TENANT,
+        'Referer': 'https://gb.starthing.com/',
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36',
       },
       body: JSON.stringify({
-        account: '3046504500',
-        password: 'f8869f779d3a4d096324d1a4f60d4b30',
-        _notSave_password: '119119ch',
+        account: process.env.ST_ACCOUNT,
+        password: process.env.ST_PASSWORD,
+        _notSave_password: process.env.ST_PASSWORD_PLAIN,
         clientType: 'h5',
         companyCode: 'STAR_THING',
         productCode: 'EQUIPMENT_MANAGEMENT_H5',
@@ -33,11 +36,13 @@ async function callAPI(target, token, tenantId) {
   return await fetch(target, {
     method: 'GET',
     headers: {
-      'Ram-System': '1144269879315968000',
-      'Ram-Tenant': tenantId || '140502261224151449',
+      'Ram-System': process.env.RAM_SYSTEM,
+      'Ram-Tenant': tenantId || process.env.RAM_TENANT,
       'Ram-Token': token,
       'X-Accept-Language': 'es',
       'Content-Type': 'application/json',
+      'Referer': 'https://gb.starthing.com/',
+      'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36',
     }
   })
 }
@@ -52,36 +57,26 @@ export default async function handler(req, res) {
   const cleanPath = url.pathname.replace(/^\/api/, '') + (url.search || '')
   const target = `https://gb.starthing.com/gw/merchant${cleanPath}`
 
-  // Primer intento con login automático
   let { token, tenantId } = await autoLogin()
 
- if (!token) {
-  return res.status(200).json({ 
-    debug: 'autoLogin falló', 
-    envVars: {
-      hasSystem: !!process.env.RAM_SYSTEM,
-      hasTenant: !!process.env.RAM_TENANT,
-      hasAccount: !!process.env.ST_ACCOUNT,
-      hasPassword: !!process.env.ST_PASSWORD,
-      hasPasswordPlain: !!process.env.ST_PASSWORD_PLAIN,
-    }
-  })
-}
+  if (!token) {
+    return res.status(401).json({ error: 'No se pudo obtener token' })
+  }
 
- try {
+  try {
     const response = await callAPI(target, token, tenantId)
     const data = await response.json()
-    
-    return res.status(200).json({ 
-      debug: true,
-      token: token?.slice(0, 10) + '...',
-      tenantId,
-      target,
-      response: data
-    })
-  } catch (e) {
-    return res.status(500).json({ error: e.message })
-  }
+
+    if (data?.code === '0000401') {
+      const retry = await autoLogin()
+      if (retry.token) {
+        const response2 = await callAPI(target, retry.token, retry.tenantId)
+        const data2 = await response2.json()
+        return res.status(200).json(data2)
+      }
+      return res.status(401).json({ error: 'Token inválido después de reintento' })
+    }
+
     return res.status(200).json(data)
   } catch (e) {
     return res.status(500).json({ error: e.message })
