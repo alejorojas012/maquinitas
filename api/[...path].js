@@ -1,11 +1,4 @@
-let cachedToken = null
-let tokenExpiry = 0
-
-async function getToken() {
-  if (cachedToken && Date.now() < tokenExpiry) {
-    return cachedToken
-  }
-
+async function doLogin() {
   const loginRes = await fetch('https://gb.starthing.com/gw/merchant/common/login', {
     method: 'POST',
     headers: {
@@ -24,32 +17,40 @@ async function getToken() {
       userTypeCode: 'MERCHANT',
     }),
   })
+  return await loginRes.json()
+}
 
-  const data = await loginRes.json()
+let cachedToken = null
+let tokenExpiry = 0
+
+async function getToken() {
+  if (cachedToken && Date.now() < tokenExpiry) return cachedToken
+  const data = await doLogin()
   if (data.code === '0000000' && data.body?.token) {
     cachedToken = data.body.token
     tokenExpiry = Date.now() + 60 * 60 * 1000
     return cachedToken
   }
-
-  throw new Error('Login fallido: ' + data.message)
+  throw new Error('Login fallido: ' + JSON.stringify(data))
 }
 
 export default async function handler(req, res) {
-  const apiPath = req.url.replace(/^\/api/, '')
-  const target = `https://gb.starthing.com/gw/merchant${apiPath}`
-
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', '*')
+  if (req.method === 'OPTIONS') return res.status(200).end()
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end()
+  // Endpoint de diagnóstico
+  if (req.url.includes('/api/debug-login')) {
+    const result = await doLogin()
+    return res.status(200).json(result)
   }
+
+  const apiPath = req.url.replace(/^\/api/, '')
+  const target = `https://gb.starthing.com/gw/merchant${apiPath}`
 
   try {
     const token = await getToken()
-
     const response = await fetch(target, {
       method: 'GET',
       headers: {
@@ -60,9 +61,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
     })
-
     const data = await response.json()
-
     if (data.code === '0000401') {
       cachedToken = null
       tokenExpiry = 0
@@ -77,10 +76,8 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json',
         },
       })
-      const retryData = await retry.json()
-      return res.status(200).json(retryData)
+      return res.status(200).json(await retry.json())
     }
-
     return res.status(200).json(data)
   } catch (e) {
     return res.status(500).json({ error: e.message })
