@@ -15,7 +15,7 @@ export function useMachines() {
     setError(null)
     try {
       const r = await axios.get(
-        '/api/gw/merchant/equipmentManage/equipmentPage?current=1&size=50&online=&storeShowType=0'
+        '/api/gw/merchant/equipmentManage/equipmentPage?current=1&size=50&online=&storeShowType=down'
       )
       setMachines(r.data?.body?.records || [])
     } catch (e: any) {
