@@ -4,12 +4,14 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', '*')
   if (req.method === 'OPTIONS') return res.status(200).end()
 
-  const apiPath = req.url.replace(/^\/api/, '')
-  const target = `https://gb.starthing.com/gw/merchant${apiPath}`
+  const url = new URL(req.url, 'http://localhost')
+  const token = url.searchParams.get('_token') || process.env.RAM_TOKEN
+  const system = process.env.RAM_SYSTEM
+  const tenant = process.env.RAM_TENANT
 
-  const token = req.headers['ram-token'] || process.env.RAM_TOKEN
-  const system = req.headers['ram-system'] || process.env.RAM_SYSTEM
-  const tenant = req.headers['ram-tenant'] || process.env.RAM_TENANT
+  url.searchParams.delete('_token')
+  const cleanPath = url.pathname.replace(/^\/api/, '') + (url.search || '')
+  const target = `https://gb.starthing.com/gw/merchant${cleanPath}`
 
   try {
     const response = await fetch(target, {

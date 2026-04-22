@@ -5,13 +5,8 @@ export function today() {
   return new Date().toISOString().slice(0, 10)
 }
 
-function getHeaders() {
-  return {
-    'Ram-System': localStorage.getItem('ram-system') || '1144269879315968000',
-    'Ram-Tenant': localStorage.getItem('ram-tenant') || '1405022612241514496',
-    'Ram-Token': localStorage.getItem('ram-token') || '',
-    'X-Accept-Language': 'es',
-  }
+function getToken() {
+  return localStorage.getItem('ram-token') || ''
 }
 
 export function useMachines() {
@@ -24,8 +19,7 @@ export function useMachines() {
     setError(null)
     try {
       const r = await axios.get(
-        `/api/gw/merchant/equipmentManage/equipmentPage?current=1&size=50&online=&storeShowType=down`,
-        { headers: getHeaders() }
+        `/api/gw/merchant/equipmentManage/equipmentPage?current=1&size=50&online=&storeShowType=down&_token=${getToken()}`
       )
       setMachines(r.data?.body?.records || [])
     } catch (e: any) {
@@ -48,8 +42,7 @@ export function useStats(dateFrom: string, dateTo: string) {
     setError(null)
     try {
       const r = await axios.get(
-        `/api/gw/merchant/statistics/store?current=1&size=50&onlyIncomeData=false&orderMode=INCOME&beginDate=${dateFrom}&endDate=${dateTo}`,
-        { headers: getHeaders() }
+        `/api/gw/merchant/statistics/store?current=1&size=50&onlyIncomeData=false&orderMode=INCOME&beginDate=${dateFrom}&endDate=${dateTo}&_token=${getToken()}`
       )
       setStats(r.data?.body?.records || [])
     } catch (e: any) {
