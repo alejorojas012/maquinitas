@@ -14,9 +14,9 @@ export default async function handler(req, res) {
     const response = await fetch(target, {
       method: 'GET',
       headers: {
-        'Ram-System': process.env.VITE_RAM_SYSTEM,
-        'Ram-Tenant': process.env.VITE_RAM_TENANT,
-        'Ram-Token': process.env.VITE_RAM_TOKEN,
+        'Ram-System': process.env.RAM_SYSTEM,
+        'Ram-Tenant': process.env.RAM_TENANT,
+        'Ram-Token': process.env.RAM_TOKEN,
         'X-Accept-Language': 'es',
         'Content-Type': 'application/json',
       },
