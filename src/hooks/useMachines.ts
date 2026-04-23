@@ -105,4 +105,22 @@ export function useBestStore(dateFrom: string, dateTo: string) {
 
   useEffect(() => { load() }, [dateFrom, dateTo])
   return { best, loading }
+export function useMachineStats() {
+  const [machineStats, setMachineStats] = useState<any>({})
+  const [loading, setLoading] = useState(false)
+
+  async function load() {
+    setLoading(true)
+    try {
+      const r = await axios.get('/api/machine-stats')
+      setMachineStats(r.data?.stats || {})
+    } catch {
+      setMachineStats({})
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [])
+  return { machineStats, loading, reload: load }
+
 }
