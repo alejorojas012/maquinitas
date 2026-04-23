@@ -70,7 +70,7 @@ export default function Dashboard() {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #22c55e, #16a34a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🎰</div>
+            <img src="/icon-maquinitas.png" alt="logo" style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'contain' }} />
             <div>
               <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Maquinitas</h1>
               <p style={{ fontSize: 11, color: '#475569', margin: 0 }}>gb.starthing.com</p>
@@ -119,7 +119,7 @@ export default function Dashboard() {
             <p style={{ fontSize: 24, fontWeight: 700, margin: 0, color: '#22c55e' }}>
               {hideAmounts ? '••••••' : '$' + fmt(totalAmount)}
             </p>
-            <p style={{ fontSize: 11, color: '#475569', margin: '2px 0 0' }}>COP · {fmt(totalTokensHoy)} fichas × $10.000</p>
+            <p style={{ fontSize: 11, color: '#475569', margin: '2px 0 0' }}>COP</p>
           </div>
           <div style={{ background: '#0d1929', border: '1px solid #1e293b', borderRadius: 12, padding: '14px 16px' }}>
             <p style={{ fontSize: 11, color: '#475569', margin: '0 0 6px' }}>🏆 Mejor Punto — Mes</p>
