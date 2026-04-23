@@ -203,6 +203,12 @@ export default function Dashboard() {
                           <span style={{ color: '#475569' }}>Última sync</span>
                           <span style={{ color: '#94a3b8' }}>{timeAgo(ms.lastSeen)}</span>
                         </div>
+                        {!m.online && ms.offlineSince && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                            <span style={{ color: '#475569' }}>Offline desde</span>
+                            <span style={{ color: '#ef4444', fontWeight: 600 }}>{timeAgo(ms.offlineSince)}</span>
+                          </div>
+                        )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
                           <span style={{ color: '#475569' }}>Desconexiones mes</span>
                           <span style={{ color: ms.disconnectionsThisMonth > 0 ? '#f59e0b' : '#475569', fontWeight: ms.disconnectionsThisMonth > 0 ? 600 : 400 }}>
@@ -253,7 +259,7 @@ export default function Dashboard() {
           </div>
 
           {/* Sidebar actividad reciente */}
-          <div style={{ background: '#0d1929', border: '1px solid #1e293b', borderRadius: 12, padding: '14px', position: 'sticky', top: 20 }}>
+          <div style={{ background: '#0d1929', border: '1px solid #1e293b', borderRadius: 12, padding: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
               <span style={{ fontSize: 14 }}>⚡</span>
               <p style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: 0 }}>Actividad Reciente</p>

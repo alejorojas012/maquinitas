@@ -12,11 +12,11 @@ export default async function handler(req, res) {
     const monthKey = new Date().toISOString().slice(0, 7)
     const state = await redis.get('machines:state') || {}
 
-    const stats = {}
-    for (const [code, data] of Object.entries(state)) {
+    const stats: any = {}
+    for (const [code, data] of Object.entries(state as any)) {
       const disconnections = await redis.get(`disconnections:${code}:${monthKey}`) || 0
       stats[code] = {
-        ...data,
+        ...(data as any),
         disconnectionsThisMonth: Number(disconnections),
       }
     }
