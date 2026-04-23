@@ -105,6 +105,8 @@ export function useBestStore(dateFrom: string, dateTo: string) {
 
   useEffect(() => { load() }, [dateFrom, dateTo])
   return { best, loading }
+}
+
 export function useMachineStats() {
   const [machineStats, setMachineStats] = useState<any>({})
   const [loading, setLoading] = useState(false)
@@ -122,5 +124,4 @@ export function useMachineStats() {
 
   useEffect(() => { load() }, [])
   return { machineStats, loading, reload: load }
-
 }
