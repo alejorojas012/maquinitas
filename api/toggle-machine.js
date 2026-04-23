@@ -9,7 +9,12 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
 
   try {
-    const { code, active } = req.body
+    let body = req.body
+    if (typeof body === 'string') {
+      body = JSON.parse(body)
+    }
+
+    const { code, active } = body
     if (!code) return res.status(400).json({ error: 'code requerido' })
 
     await redis.set(`monitor:${code}`, active ? '1' : '0')
