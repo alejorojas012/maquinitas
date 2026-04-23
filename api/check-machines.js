@@ -4,19 +4,12 @@ const redis = Redis.fromEnv()
 
 function enHorarioOperacion() {
   const ahora = new Date()
-  // Hora en Colombia (UTC-5)
   const offsetColombia = -5 * 60
   const utc = ahora.getTime() + ahora.getTimezoneOffset() * 60000
   const colombia = new Date(utc + offsetColombia * 60000)
-  
-  const horas = colombia.getHours()
-  const minutos = colombia.getMinutes()
-  const totalMinutos = horas * 60 + minutos
-
-  // Operación: 6:00am (360 min) a 12:30am (1470 min)
-  const inicio = 6 * 60        // 360
-  const fin = 24 * 60 + 30     // 1470 (12:30am del día siguiente)
-
+  const totalMinutos = colombia.getHours() * 60 + colombia.getMinutes()
+  const inicio = 6 * 60
+  const fin = 24 * 60 + 30
   return totalMinutos >= inicio && totalMinutos < fin
 }
 
@@ -41,14 +34,19 @@ export default async function handler(req, res) {
       const wasOnline = prevState[key]?.online ?? true
       const isOnline = m.online
 
+      // Verificar si esta máquina está activa para monitoreo
+      const monitorRaw = await redis.get(`monitor:${key}`)
+      const active = monitorRaw === null ? true : monitorRaw === '1'
+
       newState[key] = {
         online: isOnline,
         lastSeen: isOnline ? now : (prevState[key]?.lastSeen || now),
         offlineSince: !isOnline && wasOnline ? now : (!isOnline ? prevState[key]?.offlineSince || now : null),
         storeName: m.storeName,
+        active,
       }
 
-      if (wasOnline && !isOnline) {
+      if (wasOnline && !isOnline && active) {
         newOffline.push(m)
         await redis.incr(`disconnections:${key}:${monthKey}`)
         await redis.lpush(`history:${key}`, JSON.stringify({
@@ -59,7 +57,7 @@ export default async function handler(req, res) {
         await redis.ltrim(`history:${key}`, 0, 99)
       }
 
-      if (!wasOnline && isOnline) {
+      if (!wasOnline && isOnline && active) {
         await redis.lpush(`history:${key}`, JSON.stringify({
           event: 'online',
           timestamp: now,
@@ -71,7 +69,6 @@ export default async function handler(req, res) {
 
     await redis.set('machines:state', newState)
 
-    // Solo enviar alerta si estamos en horario de operación
     if (newOffline.length > 0 && enHorarioOperacion()) {
       const lista = newOffline.map(m => `• ${m.storeName} (${m.equipmentCode})`).join('\n')
 
@@ -90,7 +87,7 @@ export default async function handler(req, res) {
               <h2 style="color: #ef4444; margin-top: 0;">⚠️ Máquinas desconectadas</h2>
               <p style="color: #94a3b8;">Se detectaron las siguientes desconexiones durante horario de operación:</p>
               <ul style="color: #fff;">
-                ${newOffline.map(m => `<li><strong>${m.storeName}</strong> (${m.equipmentCode}) — desconectada a las ${new Date(now).toLocaleTimeString('es-CO', { timeZone: 'America/Bogota' })}</li>`).join('')}
+                ${newOffline.map(m => `<li><strong>${m.storeName}</strong> (${m.equipmentCode}) — ${new Date(now).toLocaleTimeString('es-CO', { timeZone: 'America/Bogota' })}</li>`).join('')}
               </ul>
               <a href="https://maquinitas.vercel.app" style="display: inline-block; background: #22c55e; color: #000; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 12px;">Ver dashboard</a>
             </div>

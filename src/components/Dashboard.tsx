@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useMachines, useStats, useBestStore, useMachineStats, useActivity, today, yesterday, firstDayOfMonth } from '../hooks/useMachines'
+import axios from 'axios'
 
 function fmt(n: any) {
   if (n == null) return '—'
@@ -37,21 +38,31 @@ export default function Dashboard() {
   const [tab, setTab] = useState<'machines' | 'stores'>('machines')
   const [hideAmounts, setHideAmounts] = useState(false)
   const [filter, setFilter] = useState<'all' | 'online' | 'offline'>('all')
+  const [toggling, setToggling] = useState<string | null>(null)
 
   const { machines, loading: loadingM, reload } = useMachines()
   const { stats } = useStats(dateFrom, dateTo)
   const { stats: statsMonth } = useStats(firstDayOfMonth(), today())
-  const { machineStats } = useMachineStats()
+  const { machineStats, reload: reloadStats } = useMachineStats()
   const { events } = useActivity()
   const { best: bestMonth } = useBestStore(firstDayOfMonth(), today())
   const { best: bestYesterday } = useBestStore(yesterday(), yesterday())
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      reload()
-    }, 5 * 60 * 1000)
+    const interval = setInterval(() => { reload() }, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
+
+  async function toggleMonitor(code: string, currentActive: boolean) {
+    setToggling(code)
+    try {
+      await axios.post('/api/toggle-machine', { code, active: !currentActive })
+      await reloadStats()
+    } catch (e) {
+      console.error(e)
+    }
+    setToggling(null)
+  }
 
   const onlineCount = machines.filter(m => m.online).length
   const offlineCount = machines.filter(m => !m.online).length
@@ -177,10 +188,16 @@ export default function Dashboard() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
                 {filteredMachines.map((m, i) => {
                   const ms = machineStats[m.equipmentCode] || {}
+                  const isActive = ms.active !== false
                   const tokensHoy = parseInt(statsByStore[m.storeName]?.offlineOutCoinSum || '0')
                   const tokensMes = parseInt(statsMonthByStore[m.storeName]?.offlineOutCoinSum || '0')
                   return (
-                    <div key={i} style={{ background: '#0d1929', border: `1px solid ${m.online ? '#1a3a2a' : '#3a1a1a'}`, borderRadius: 12, padding: '14px' }}>
+                    <div key={i} style={{
+                      background: '#0d1929',
+                      border: `1px solid ${!isActive ? '#1e293b' : m.online ? '#1a3a2a' : '#3a1a1a'}`,
+                      borderRadius: 12, padding: '14px',
+                      opacity: isActive ? 1 : 0.6,
+                    }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                         <div>
                           <p style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>{m.storeName}</p>
@@ -225,6 +242,20 @@ export default function Dashboard() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
                           <span style={{ color: '#475569' }}>Red</span>
                           <span style={{ color: '#94a3b8' }}>{m.networkType || '—'}</span>
+                        </div>
+                        {/* Toggle monitoreo */}
+                        <div style={{ borderTop: '1px solid #1e293b', paddingTop: 8, marginTop: 4 }}>
+                          <button
+                            onClick={() => toggleMonitor(m.equipmentCode, isActive)}
+                            disabled={toggling === m.equipmentCode}
+                            style={{
+                              width: '100%', padding: '6px', borderRadius: 8, fontSize: 11, cursor: 'pointer', fontWeight: 600,
+                              border: `1px solid ${isActive ? '#22c55e33' : '#1e293b'}`,
+                              background: isActive ? '#0d2818' : '#1e293b',
+                              color: isActive ? '#22c55e' : '#475569',
+                            }}>
+                            {toggling === m.equipmentCode ? '...' : isActive ? '🔔 Monitoreo activo' : '🔕 Monitoreo pausado'}
+                          </button>
                         </div>
                       </div>
                     </div>
