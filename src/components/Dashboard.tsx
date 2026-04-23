@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useMachines, useStats, useBestStore, useMachineStats, useActivity, today, yesterday, firstDayOfMonth } from '../hooks/useMachines'
 
 function fmt(n: any) {
@@ -45,6 +45,13 @@ export default function Dashboard() {
   const { events } = useActivity()
   const { best: bestMonth } = useBestStore(firstDayOfMonth(), today())
   const { best: bestYesterday } = useBestStore(yesterday(), yesterday())
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      reload()
+    }, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   const onlineCount = machines.filter(m => m.online).length
   const offlineCount = machines.filter(m => !m.online).length
@@ -258,7 +265,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Sidebar actividad reciente */}
+          {/* Actividad reciente */}
           <div style={{ background: '#0d1929', border: '1px solid #1e293b', borderRadius: 12, padding: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
               <span style={{ fontSize: 14 }}>⚡</span>
