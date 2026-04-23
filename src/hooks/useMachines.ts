@@ -125,3 +125,22 @@ export function useMachineStats() {
   useEffect(() => { load() }, [])
   return { machineStats, loading, reload: load }
 }
+
+export function useActivity() {
+  const [events, setEvents] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+
+  async function load() {
+    setLoading(true)
+    try {
+      const r = await axios.get('/api/activity')
+      setEvents(r.data?.events || [])
+    } catch {
+      setEvents([])
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [])
+  return { events, loading, reload: load }
+}
