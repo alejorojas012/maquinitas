@@ -62,6 +62,7 @@ export default function Dashboard() {
   const [hideAmounts, setHideAmounts] = useState(false)
   const [filter, setFilter] = useState<'all' | 'online' | 'offline'>('all')
   const [toggling, setToggling] = useState<string | null>(null)
+  const [localActive, setLocalActive] = useState<Record<string, boolean>>({})
   const [dark, setDark] = useState(true)
 
   const { machines, loading: loadingM, reload } = useMachines()
@@ -78,11 +79,14 @@ export default function Dashboard() {
   }, [])
 
   async function toggleMonitor(code: string, currentActive: boolean) {
+    const newActive = !currentActive
     setToggling(code)
+    setLocalActive(prev => ({ ...prev, [code]: newActive }))
     try {
-      await axios.post('/api/toggle-machine', { code, active: !currentActive })
+      await axios.post('/api/toggle-machine', { code, active: newActive })
       await reloadStats()
     } catch (e) {
+      setLocalActive(prev => ({ ...prev, [code]: currentActive }))
       console.error(e)
     }
     setToggling(null)
@@ -105,7 +109,6 @@ export default function Dashboard() {
   const statsMonthByStore: any = {}
   for (const r of statsMonth) statsMonthByStore[r.storeName] = r
 
-  // Colores según modo
   const bg = dark ? '#060d1a' : '#f1f5f9'
   const card = dark ? '#0d1929' : '#ffffff'
   const cardInner = dark ? '#0a1525' : '#f8fafc'
@@ -136,7 +139,6 @@ export default function Dashboard() {
             <button onClick={reload} style={{ padding: '6px 16px', borderRadius: 8, background: '#22c55e', color: '#000', border: 'none', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
               ↻ Actualizar
             </button>
-            {/* Toggle modo oscuro/claro */}
             <div onClick={() => setDark(!dark)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{
                 width: 36, height: 20, borderRadius: 99, padding: 2,
@@ -238,7 +240,9 @@ export default function Dashboard() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
                 {filteredMachines.map((m, i) => {
                   const ms = machineStats[m.equipmentCode] || {}
-                  const isActive = ms.active === undefined ? true : ms.active === true
+                  const isActive = localActive[m.equipmentCode] !== undefined
+                    ? localActive[m.equipmentCode]
+                    : (ms.active === undefined ? true : ms.active === true)
                   const tokensHoy = parseInt(statsByStore[m.storeName]?.offlineOutCoinSum || '0')
                   const tokensMes = parseInt(statsMonthByStore[m.storeName]?.offlineOutCoinSum || '0')
                   return (
