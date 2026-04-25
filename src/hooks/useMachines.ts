@@ -1,19 +1,25 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
+function colombiaDate(offsetDays = 0) {
+  const now = new Date()
+  const colombia = new Date(now.getTime() - 5 * 60 * 60 * 1000)
+  colombia.setDate(colombia.getDate() + offsetDays)
+  return colombia.toISOString().slice(0, 10)
+}
+
 export function today() {
-  return new Date().toISOString().slice(0, 10)
+  return colombiaDate(0)
 }
 
 export function yesterday() {
-  const d = new Date()
-  d.setDate(d.getDate() - 1)
-  return d.toISOString().slice(0, 10)
+  return colombiaDate(-1)
 }
 
 export function firstDayOfMonth() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+  const now = new Date()
+  const colombia = new Date(now.getTime() - 5 * 60 * 60 * 1000)
+  return `${colombia.getFullYear()}-${String(colombia.getMonth() + 1).padStart(2, '0')}-01`
 }
 
 export function useMachines() {
