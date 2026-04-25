@@ -164,8 +164,8 @@ export default function Dashboard() {
             { label: 'Total Máquinas', value: machines.length, icon: '🖥️' },
             { label: 'En Línea', value: onlineCount, icon: '🟢', color: '#22c55e' },
             { label: 'Desconectadas', value: offlineCount, icon: '🔴', color: offlineCount > 0 ? '#ef4444' : textMuted },
-            { label: 'Fichas Hoy', value: fmt(totalTokensHoy), icon: '🪙', color: '#22c55e' },
-            { label: 'Fichas Mes', value: fmt(totalTokensMes), icon: '📅' },
+            { label: 'Token Hoy', value: fmt(totalTokensHoy), icon: '🪙', color: '#22c55e' },
+            { label: 'Token Mes', value: fmt(totalTokensMes), icon: '📅' },
           ].map((s, i) => (
             <div key={i} style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: '12px 14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
@@ -264,11 +264,11 @@ export default function Dashboard() {
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
                         <div style={{ background: cardInner, borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
-                          <p style={{ fontSize: 9, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Fichas Hoy</p>
+                          <p style={{ fontSize: 9, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Token Hoy</p>
                           <p style={{ fontSize: 20, fontWeight: 800, color: '#22c55e', margin: 0 }}>{fmt(tokensHoy)}</p>
                         </div>
                         <div style={{ background: cardInner, borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
-                          <p style={{ fontSize: 9, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Fichas Mes</p>
+                          <p style={{ fontSize: 9, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Token Mes</p>
                           <p style={{ fontSize: 20, fontWeight: 800, color: text, margin: 0 }}>{fmt(tokensMes)}</p>
                         </div>
                       </div>
