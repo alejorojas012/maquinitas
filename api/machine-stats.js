@@ -1,7 +1,3 @@
-import { Redis } from '@upstash/redis'
-
-const redis = Redis.fromEnv()
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS')
@@ -10,13 +6,34 @@ export default async function handler(req, res) {
 
   try {
     const monthKey = new Date().toISOString().slice(0, 7)
-    const state = await redis.get('machines:state') || {}
+    const baseUrl = process.env.KV_REST_API_URL
+    const token = process.env.KV_REST_API_TOKEN
+
+    // Leer machines:state via REST directo
+    const stateRes = await fetch(`${baseUrl}/get/machines:state`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const stateData = await stateRes.json()
+    const state = typeof stateData.result === 'string' 
+      ? JSON.parse(stateData.result) 
+      : (stateData.result || {})
 
     const stats = {}
     for (const [code, data] of Object.entries(state)) {
-      const disconnections = await redis.get(`disconnections:${code}:${monthKey}`) || 0
-      const monitorRaw = await redis.get(`monitor:${code}`)
-      const active = monitorRaw === null ? true : monitorRaw === '1'
+      // Leer disconnections via REST directo
+      const discRes = await fetch(`${baseUrl}/get/disconnections:${code}:${monthKey}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const discData = await discRes.json()
+      const disconnections = discData.result || 0
+
+      // Leer monitor via REST directo
+      const monRes = await fetch(`${baseUrl}/get/monitor:${code}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const monData = await monRes.json()
+      const active = monData.result === null ? true : monData.result === '1'
+
       stats[code] = {
         ...data,
         disconnectionsThisMonth: Number(disconnections),
