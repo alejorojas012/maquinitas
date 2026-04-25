@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     const data = await response.json()
     const records = data?.body?.records || []
 
-    const movements = records.map((r: any) => ({
+    const movements = records.map(r => ({
       storeName: r.storeName || '—',
       equipmentCode: r.equipmentCode,
       tokens: parseInt(r.outCoinsIncrement || '0'),
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     }))
 
     return res.status(200).json({ ok: true, movements })
-  } catch (e: any) {
+  } catch (e) {
     return res.status(500).json({ error: e.message })
   }
 }
