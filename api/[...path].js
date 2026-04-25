@@ -29,6 +29,14 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
 
   const url = new URL(req.url, 'http://localhost')
+
+  // Proteger rutas internas
+  const internalRoutes = ['auth', 'check-machines', 'machine-stats', 'toggle-machine', 'activity', 'reset-state']
+  const firstSegment = url.pathname.split('/').filter(Boolean)[1]
+  if (internalRoutes.includes(firstSegment)) {
+    return res.status(404).json({ error: 'Ruta interna' })
+  }
+
   const cleanPath = url.pathname.replace(/^\/api\/gw\/merchant/, '') + (url.search || '')
   const target = `https://gb.starthing.com/gw/merchant${cleanPath}`
 
