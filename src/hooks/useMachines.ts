@@ -62,29 +62,6 @@ export function useStats(dateFrom: string, dateTo: string) {
   return { stats, loading, error, reload: load }
 }
 
-export function useSummary(dateFrom: string, dateTo: string) {
-  const [summary, setSummary] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  async function load() {
-    setLoading(true)
-    setError(null)
-    try {
-      const r = await axios.get(
-        `/api/gw/merchant/statistics/summary?current=1&size=10&storeShowType=down&screenShowType=down&onlyIncomeData=false&orderMode=INCOME&beginDate=${dateFrom}&endDate=${dateTo}`
-      )
-      setSummary(r.data?.body || null)
-    } catch (e: any) {
-      setError(e.message)
-    }
-    setLoading(false)
-  }
-
-  useEffect(() => { load() }, [dateFrom, dateTo])
-  return { summary, loading, error, reload: load }
-}
-
 export function useBestStore(dateFrom: string, dateTo: string) {
   const [best, setBest] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -143,4 +120,23 @@ export function useActivity() {
 
   useEffect(() => { load() }, [])
   return { events, loading, reload: load }
+}
+
+export function useRecentActivity() {
+  const [movements, setMovements] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+
+  async function load() {
+    setLoading(true)
+    try {
+      const r = await axios.get('/api/recent-activity')
+      setMovements(r.data?.movements || [])
+    } catch {
+      setMovements([])
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [])
+  return { movements, loading, reload: load }
 }

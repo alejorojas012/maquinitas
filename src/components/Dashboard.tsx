@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useMachines, useStats, useBestStore, useMachineStats, useActivity, today, yesterday, firstDayOfMonth } from '../hooks/useMachines'
+import { useMachines, useStats, useBestStore, useMachineStats, useActivity, useRecentActivity, today, yesterday, firstDayOfMonth } from '../hooks/useMachines'
 import axios from 'axios'
 
 function fmt(n: any) {
@@ -70,6 +70,7 @@ export default function Dashboard() {
   const { stats: statsMonth } = useStats(firstDayOfMonth(), today())
   const { machineStats, reload: reloadStats } = useMachineStats()
   const { events } = useActivity()
+  const { movements } = useRecentActivity()
   const { best: bestMonth } = useBestStore(firstDayOfMonth(), today())
   const { best: bestYesterday } = useBestStore(yesterday(), yesterday())
 
@@ -164,8 +165,8 @@ export default function Dashboard() {
             { label: 'Total Máquinas', value: machines.length, icon: '🖥️' },
             { label: 'En Línea', value: onlineCount, icon: '🟢', color: '#22c55e' },
             { label: 'Desconectadas', value: offlineCount, icon: '🔴', color: offlineCount > 0 ? '#ef4444' : textMuted },
-            { label: 'Token Hoy', value: fmt(totalTokensHoy), icon: '🪙', color: '#22c55e' },
-            { label: 'Token Mes', value: fmt(totalTokensMes), icon: '📅' },
+            { label: 'Tokens Hoy', value: fmt(totalTokensHoy), icon: '🪙', color: '#22c55e' },
+            { label: 'Tokens Mes', value: fmt(totalTokensMes), icon: '📅' },
           ].map((s, i) => (
             <div key={i} style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: '12px 14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
@@ -195,14 +196,14 @@ export default function Dashboard() {
             <p style={{ fontSize: 11, color: textMuted, margin: '0 0 6px' }}>🏆 Mejor Punto — Mes</p>
             <p style={{ fontSize: 16, fontWeight: 700, color: text, margin: '0 0 2px' }}>{bestMonth?.storeName || '—'}</p>
             <p style={{ fontSize: 22, fontWeight: 800, color: '#22c55e', margin: 0 }}>
-              {fmt(parseInt(bestMonth?.offlineOutCoinSum || '0'))} <span style={{ fontSize: 12, fontWeight: 400, color: textMuted }}>fichas</span>
+              {fmt(parseInt(bestMonth?.offlineOutCoinSum || '0'))} <span style={{ fontSize: 12, fontWeight: 400, color: textMuted }}>tokens</span>
             </p>
           </div>
           <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: '14px 16px' }}>
             <p style={{ fontSize: 11, color: textMuted, margin: '0 0 6px' }}>📈 Mejor Punto — Ayer</p>
             <p style={{ fontSize: 16, fontWeight: 700, color: text, margin: '0 0 2px' }}>{bestYesterday?.storeName || '—'}</p>
             <p style={{ fontSize: 22, fontWeight: 800, color: '#22c55e', margin: 0 }}>
-              {fmt(parseInt(bestYesterday?.offlineOutCoinSum || '0'))} <span style={{ fontSize: 12, fontWeight: 400, color: textMuted }}>fichas</span>
+              {fmt(parseInt(bestYesterday?.offlineOutCoinSum || '0'))} <span style={{ fontSize: 12, fontWeight: 400, color: textMuted }}>tokens</span>
             </p>
           </div>
         </div>
@@ -264,11 +265,11 @@ export default function Dashboard() {
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
                         <div style={{ background: cardInner, borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
-                          <p style={{ fontSize: 9, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Token Hoy</p>
+                          <p style={{ fontSize: 9, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Tokens Hoy</p>
                           <p style={{ fontSize: 20, fontWeight: 800, color: '#22c55e', margin: 0 }}>{fmt(tokensHoy)}</p>
                         </div>
                         <div style={{ background: cardInner, borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
-                          <p style={{ fontSize: 9, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Token Mes</p>
+                          <p style={{ fontSize: 9, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Tokens Mes</p>
                           <p style={{ fontSize: 20, fontWeight: 800, color: text, margin: 0 }}>{fmt(tokensMes)}</p>
                         </div>
                       </div>
@@ -318,7 +319,7 @@ export default function Dashboard() {
                   <thead>
                     <tr style={{ borderBottom: `1px solid ${border}`, background: cardInner }}>
                       <th style={{ textAlign: 'left', padding: '10px 14px', color: textMuted, fontWeight: 500 }}>Tienda</th>
-                      <th style={{ textAlign: 'right', padding: '10px 14px', color: textMuted, fontWeight: 500 }}>Fichas</th>
+                      <th style={{ textAlign: 'right', padding: '10px 14px', color: textMuted, fontWeight: 500 }}>Tokens</th>
                       <th style={{ textAlign: 'right', padding: '10px 14px', color: textMuted, fontWeight: 500 }}>Total COP</th>
                       <th style={{ textAlign: 'right', padding: '10px 14px', color: textMuted, fontWeight: 500 }}>Efectivo</th>
                     </tr>
@@ -349,22 +350,55 @@ export default function Dashboard() {
               <span style={{ fontSize: 14 }}>⚡</span>
               <p style={{ fontSize: 13, fontWeight: 600, color: text, margin: 0 }}>Actividad Reciente</p>
             </div>
-            {events.length === 0 ? (
-              <p style={{ color: textMuted, fontSize: 12, textAlign: 'center', padding: '20px 0' }}>Sin actividad reciente</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {events.slice(0, 15).map((e, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', marginTop: 4, flexShrink: 0, background: e.event === 'online' ? '#22c55e' : '#ef4444', display: 'inline-block' }} />
-                    <div>
-                      <p style={{ fontSize: 12, color: textSub, margin: '0 0 1px' }}>
-                        <strong style={{ color: text }}>{e.storeName}</strong> — {e.event === 'online' ? 'reconectada' : 'desconectada'}
-                      </p>
-                      <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>{timeAgo(e.timestamp)}</p>
+
+            {/* Movimientos */}
+            {movements.length > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <p style={{ fontSize: 10, color: textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 8px' }}>🪙 Últimos movimientos</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {movements.slice(0, 10).map((m, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: cardInner, borderRadius: 8 }}>
+                      <div>
+                        <p style={{ fontSize: 11, color: text, fontWeight: 600, margin: '0 0 1px' }}>{m.storeName}</p>
+                        <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>{m.created?.slice(11, 16)}</p>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} 🪙</p>
+                        <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>${fmt(m.amount * 1000)}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
+            )}
+
+            {/* Separador */}
+            {events.length > 0 && movements.length > 0 && (
+              <div style={{ borderTop: `1px solid ${border}`, marginBottom: 12 }} />
+            )}
+
+            {/* Alertas */}
+            {events.length > 0 && (
+              <div>
+                <p style={{ fontSize: 10, color: textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 8px' }}>🔔 Alertas</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {events.slice(0, 8).map((e, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', marginTop: 4, flexShrink: 0, background: e.event === 'online' ? '#22c55e' : '#ef4444', display: 'inline-block' }} />
+                      <div>
+                        <p style={{ fontSize: 12, color: textSub, margin: '0 0 1px' }}>
+                          <strong style={{ color: text }}>{e.storeName}</strong> — {e.event === 'online' ? 'reconectada' : 'desconectada'}
+                        </p>
+                        <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>{timeAgo(e.timestamp)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {events.length === 0 && movements.length === 0 && (
+              <p style={{ color: textMuted, fontSize: 12, textAlign: 'center', padding: '20px 0' }}>Sin actividad reciente</p>
             )}
           </div>
         </div>
