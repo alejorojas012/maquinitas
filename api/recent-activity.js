@@ -7,7 +7,11 @@ export default async function handler(req, res) {
 
   try {
     const base = 'https://maquinitas.vercel.app'
-    const today = new Date().toISOString().slice(0, 10)
+    
+    // Fecha en hora Colombia (UTC-5)
+    const now = new Date()
+    const colombia = new Date(now.getTime() - 5 * 60 * 60 * 1000)
+    const today = colombia.toISOString().slice(0, 10)
     const ts = Date.now()
 
     const response = await fetch(
@@ -26,7 +30,7 @@ export default async function handler(req, res) {
       }))
       .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime())
 
-    return res.status(200).json({ ok: true, movements })
+    return res.status(200).json({ ok: true, movements, date: today })
   } catch (e) {
     return res.status(500).json({ error: e.message })
   }
