@@ -1,7 +1,3 @@
-import { Redis } from '@upstash/redis'
-
-const redis = Redis.fromEnv()
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS')
@@ -10,16 +6,24 @@ export default async function handler(req, res) {
 
   try {
     let body = req.body
-    if (typeof body === 'string') {
-      body = JSON.parse(body)
-    }
+    if (typeof body === 'string') body = JSON.parse(body)
 
     const { code, active } = body
     if (!code) return res.status(400).json({ error: 'code requerido' })
 
-    await redis.set(`monitor:${code}`, active ? '1' : '0')
+    const value = active ? '1' : '0'
 
-    return res.status(200).json({ ok: true, code, active })
+    // Usar REST directo de Upstash en lugar del SDK
+    const url = `${process.env.KV_REST_API_URL}/set/monitor:${code}/${value}`
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
+      }
+    })
+
+    const data = await response.json()
+
+    return res.status(200).json({ ok: true, code, active, redis: data })
   } catch (e) {
     return res.status(500).json({ error: e.message })
   }
