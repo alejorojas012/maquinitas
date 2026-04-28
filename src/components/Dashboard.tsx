@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import * as XLSX from 'xlsx'
 import { useMachines, useStats, useBestStore, useMachineStats, useActivity, useRecentActivity, today, yesterday, firstDayOfMonth } from '../hooks/useMachines'
 import axios from 'axios'
 
@@ -64,6 +65,11 @@ export default function Dashboard() {
   const [toggling, setToggling] = useState<string | null>(null)
   const [localActive, setLocalActive] = useState<Record<string, boolean>>({})
   const [dark, setDark] = useState(true)
+  const [showExport, setShowExport] = useState(false)
+  const [exportFrom, setExportFrom] = useState(today())
+  const [exportTo, setExportTo] = useState(today())
+  const [exportStore, setExportStore] = useState('all')
+  const [exporting, setExporting] = useState(false)
 
   const { machines, loading: loadingM, reload } = useMachines()
   const { stats } = useStats(dateFrom, dateTo)
@@ -91,6 +97,37 @@ export default function Dashboard() {
       console.error(e)
     }
     setToggling(null)
+  }
+
+  async function downloadExcel() {
+    setExporting(true)
+    try {
+      const params = new URLSearchParams({
+        dateFrom: exportFrom,
+        dateTo: exportTo,
+        storeId: exportStore,
+      })
+      const r = await axios.get(`/api/export?${params}`)
+      const data = r.data?.movements || []
+
+      const ws = XLSX.utils.json_to_sheet(data.map((m: any) => ({
+        'Fecha': m.fecha,
+        'Hora': m.hora,
+        'Tienda': m.tienda,
+        'Código': m.codigo,
+        'Tokens': m.tokens,
+        'Facturación COP': m.facturacion,
+        'Método de Pago': m.metodoPago,
+      })))
+
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'Movimientos')
+      XLSX.writeFile(wb, `maquinitas-${exportFrom}-${exportTo}.xlsx`)
+      setShowExport(false)
+    } catch (e) {
+      console.error(e)
+    }
+    setExporting(false)
   }
 
   const onlineCount = machines.filter(m => m.online).length
@@ -140,7 +177,11 @@ export default function Dashboard() {
             <button onClick={reload} style={{ padding: '6px 16px', borderRadius: 8, background: '#22c55e', color: '#000', border: 'none', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
               ↻ Actualizar
             </button>
-            <div onClick={() => setDark(!dark)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={() => setShowExport(true)}
+              style={{ padding: '6px 16px', borderRadius: 8, background: card, color: textSub, border: `1px solid ${border}`, fontSize: 12, cursor: 'pointer' }}>
+              📥 Historial
+            </button>
+            <div onClick={() => setDark(!dark)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
               <div style={{
                 width: 36, height: 20, borderRadius: 99, padding: 2,
                 background: dark ? '#334155' : '#cbd5e1',
@@ -158,6 +199,44 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* Modal exportar */}
+        {showExport && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+            <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 16, padding: 24, width: '100%', maxWidth: 400, margin: '0 16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: text }}>📥 Descargar Historial</h2>
+                <button onClick={() => setShowExport(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 24, lineHeight: 1 }}>×</button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div>
+                  <p style={{ fontSize: 11, color: textMuted, margin: '0 0 4px' }}>Desde</p>
+                  <input type="date" value={exportFrom} onChange={e => setExportFrom(e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: `1px solid ${border}`, background: cardInner, color: text, fontSize: 13, boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 11, color: textMuted, margin: '0 0 4px' }}>Hasta</p>
+                  <input type="date" value={exportTo} onChange={e => setExportTo(e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: `1px solid ${border}`, background: cardInner, color: text, fontSize: 13, boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 11, color: textMuted, margin: '0 0 4px' }}>Tienda</p>
+                  <select value={exportStore} onChange={e => setExportStore(e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: `1px solid ${border}`, background: cardInner, color: text, fontSize: 13 }}>
+                    <option value="all">Todas las tiendas</option>
+                    {stats.map((s: any) => (
+                      <option key={s.storeId} value={s.storeId}>{s.storeName}</option>
+                    ))}
+                  </select>
+                </div>
+                <button onClick={downloadExcel} disabled={exporting}
+                  style={{ padding: '10px', borderRadius: 8, background: '#22c55e', color: '#000', border: 'none', fontSize: 13, cursor: exporting ? 'not-allowed' : 'pointer', fontWeight: 600, marginTop: 8, opacity: exporting ? 0.7 : 1 }}>
+                  {exporting ? '⏳ Generando...' : '📥 Descargar Excel'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Métricas top */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 }}>
@@ -351,7 +430,6 @@ export default function Dashboard() {
               <p style={{ fontSize: 13, fontWeight: 600, color: text, margin: 0 }}>Actividad Reciente</p>
             </div>
 
-            {/* Movimientos */}
             {movements.length > 0 && (
               <div style={{ marginBottom: 14 }}>
                 <p style={{ fontSize: 10, color: textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 8px' }}>🪙 Últimos movimientos</p>
@@ -362,7 +440,7 @@ export default function Dashboard() {
                         <p style={{ fontSize: 11, color: text, fontWeight: 600, margin: '0 0 1px' }}>{m.storeName}</p>
                         <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>
                           {m.created ? new Date(m.created.replace(' ', 'T') + 'Z').toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : '—'}
-                          </p>
+                        </p>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <p style={{ fontSize: 13, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} 🪙</p>
@@ -374,12 +452,10 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Separador */}
             {events.length > 0 && movements.length > 0 && (
               <div style={{ borderTop: `1px solid ${border}`, marginBottom: 12 }} />
             )}
 
-            {/* Alertas */}
             {events.length > 0 && (
               <div>
                 <p style={{ fontSize: 10, color: textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 8px' }}>🔔 Alertas</p>
