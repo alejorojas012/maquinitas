@@ -360,7 +360,9 @@ export default function Dashboard() {
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: cardInner, borderRadius: 8 }}>
                       <div>
                         <p style={{ fontSize: 11, color: text, fontWeight: 600, margin: '0 0 1px' }}>{m.storeName}</p>
-                        <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>{m.created?.slice(11, 16)}</p>
+                        <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>
+                          {m.created ? new Date(m.created.replace(' ', 'T') + 'Z').toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : '—'}
+                          </p>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <p style={{ fontSize: 13, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} 🪙</p>
