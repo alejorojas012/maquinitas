@@ -70,6 +70,7 @@ export default function Dashboard() {
   const [exportTo, setExportTo] = useState(today())
   const [exportStore, setExportStore] = useState('all')
   const [exporting, setExporting] = useState(false)
+  const [selectedMachine, setSelectedMachine] = useState<any>(null)
 
   const { machines, loading: loadingM, reload } = useMachines()
   const { stats } = useStats(dateFrom, dateTo)
@@ -102,31 +103,19 @@ export default function Dashboard() {
   async function downloadExcel() {
     setExporting(true)
     try {
-      const params = new URLSearchParams({
-        dateFrom: exportFrom,
-        dateTo: exportTo,
-        storeId: exportStore,
-      })
+      const params = new URLSearchParams({ dateFrom: exportFrom, dateTo: exportTo, storeId: exportStore })
       const r = await axios.get(`/api/export?${params}`)
       const data = r.data?.movements || []
-
       const ws = XLSX.utils.json_to_sheet(data.map((m: any) => ({
-        'Fecha': m.fecha,
-        'Hora': m.hora,
-        'Tienda': m.tienda,
-        'Código': m.codigo,
-        'Tokens': m.tokens,
-        'Facturación COP': m.facturacion,
-        'Método de Pago': m.metodoPago,
+        'Fecha': m.fecha, 'Hora': m.hora, 'Tienda': m.tienda,
+        'Código': m.codigo, 'Tokens': m.tokens,
+        'Facturación COP': m.facturacion, 'Método de Pago': m.metodoPago,
       })))
-
       const wb = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(wb, ws, 'Movimientos')
       XLSX.writeFile(wb, `maquinitas-${exportFrom}-${exportTo}.xlsx`)
       setShowExport(false)
-    } catch (e) {
-      console.error(e)
-    }
+    } catch (e) { console.error(e) }
     setExporting(false)
   }
 
@@ -146,6 +135,11 @@ export default function Dashboard() {
   for (const r of stats) statsByStore[r.storeName] = r
   const statsMonthByStore: any = {}
   for (const r of statsMonth) statsMonthByStore[r.storeName] = r
+
+  // Movimientos de la máquina seleccionada
+  const machineMovements = selectedMachine
+    ? movements.filter((m: any) => m.equipmentCode === selectedMachine.equipmentCode)
+    : []
 
   const bg = dark ? '#060d1a' : '#f1f5f9'
   const card = dark ? '#0d1929' : '#ffffff'
@@ -182,23 +176,73 @@ export default function Dashboard() {
               📥 Historial
             </button>
             <div onClick={() => setDark(!dark)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-              <div style={{
-                width: 36, height: 20, borderRadius: 99, padding: 2,
-                background: dark ? '#334155' : '#cbd5e1',
-                display: 'flex', alignItems: 'center', transition: 'background 0.2s',
-              }}>
-                <div style={{
-                  width: 16, height: 16, borderRadius: '50%', background: dark ? '#f8fafc' : '#0f172a',
-                  transform: dark ? 'translateX(16px)' : 'translateX(0)',
-                  transition: 'transform 0.2s',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10,
-                }}>
+              <div style={{ width: 36, height: 20, borderRadius: 99, padding: 2, background: dark ? '#334155' : '#cbd5e1', display: 'flex', alignItems: 'center', transition: 'background 0.2s' }}>
+                <div style={{ width: 16, height: 16, borderRadius: '50%', background: dark ? '#f8fafc' : '#0f172a', transform: dark ? 'translateX(16px)' : 'translateX(0)', transition: 'transform 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>
                   {dark ? '🌙' : '☀️'}
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Modal movimientos por máquina */}
+        {selectedMachine && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+            onClick={() => setSelectedMachine(null)}>
+            <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 16, padding: 24, width: '100%', maxWidth: 420, margin: '0 16px', maxHeight: '80vh', overflowY: 'auto' }}
+              onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div>
+                  <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 2px', color: text }}>{selectedMachine.storeName}</h2>
+                  <p style={{ fontSize: 11, color: textMuted, margin: 0 }}>{selectedMachine.equipmentCode} · Movimientos de hoy</p>
+                </div>
+                <button onClick={() => setSelectedMachine(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 24, lineHeight: 1 }}>×</button>
+              </div>
+
+              {machineMovements.length === 0 ? (
+                <p style={{ color: textMuted, fontSize: 13, textAlign: 'center', padding: '20px 0' }}>Sin movimientos hoy</p>
+              ) : (
+                <>
+                  <div style={{ background: cardInner, borderRadius: 10, padding: '12px 16px', marginBottom: 14, display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Total tokens</p>
+                      <p style={{ fontSize: 22, fontWeight: 800, color: '#22c55e', margin: 0 }}>
+                        {machineMovements.reduce((a: number, m: any) => a + m.tokens, 0)}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Facturación</p>
+                      <p style={{ fontSize: 22, fontWeight: 800, color: text, margin: 0 }}>
+                        ${fmt(machineMovements.reduce((a: number, m: any) => a + m.tokens, 0) * 10000)}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Transacciones</p>
+                      <p style={{ fontSize: 22, fontWeight: 800, color: text, margin: 0 }}>{machineMovements.length}</p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {machineMovements.map((m: any, i: number) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: cardInner, borderRadius: 8 }}>
+                        <div>
+                          <p style={{ fontSize: 12, color: text, fontWeight: 500, margin: '0 0 1px' }}>
+                            {m.created ? new Date(m.created.replace(' ', 'T') + 'Z').toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : '—'}
+                          </p>
+                          <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>Efectivo</p>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <p style={{ fontSize: 14, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} 🪙</p>
+                          <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>${fmt(m.amount * 1000)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Modal exportar */}
         {showExport && (
@@ -326,12 +370,19 @@ export default function Dashboard() {
                   const tokensHoy = parseInt(statsByStore[m.storeName]?.offlineOutCoinSum || '0')
                   const tokensMes = parseInt(statsMonthByStore[m.storeName]?.offlineOutCoinSum || '0')
                   return (
-                    <div key={i} style={{
-                      background: card,
-                      border: `1px solid ${!isActive ? border : m.online ? '#1a3a2a' : '#3a1a1a'}`,
-                      borderRadius: 12, padding: '14px',
-                      opacity: isActive ? 1 : 0.6,
-                    }}>
+                    <div key={i}
+                      onClick={() => setSelectedMachine(m)}
+                      style={{
+                        background: card,
+                        border: `1px solid ${!isActive ? border : m.online ? '#1a3a2a' : '#3a1a1a'}`,
+                        borderRadius: 12, padding: '14px',
+                        opacity: isActive ? 1 : 0.6,
+                        cursor: 'pointer',
+                        transition: 'transform 0.1s, box-shadow 0.1s',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
+                      onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
+                    >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                         <div>
                           <p style={{ fontSize: 14, fontWeight: 700, color: text, margin: '0 0 2px' }}>{m.storeName}</p>
@@ -377,7 +428,8 @@ export default function Dashboard() {
                           <span style={{ color: textMuted }}>Red</span>
                           <span style={{ color: textSub }}>{m.networkType || '—'}</span>
                         </div>
-                        <div style={{ borderTop: `1px solid ${border}`, paddingTop: 8, marginTop: 4 }}>
+                        <div style={{ borderTop: `1px solid ${border}`, paddingTop: 8, marginTop: 4 }}
+                          onClick={e => e.stopPropagation()}>
                           <Toggle
                             active={isActive}
                             onChange={() => toggleMonitor(m.equipmentCode, isActive)}
@@ -429,12 +481,11 @@ export default function Dashboard() {
               <span style={{ fontSize: 14 }}>⚡</span>
               <p style={{ fontSize: 13, fontWeight: 600, color: text, margin: 0 }}>Actividad Reciente</p>
             </div>
-
             {movements.length > 0 && (
               <div style={{ marginBottom: 14 }}>
                 <p style={{ fontSize: 10, color: textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 8px' }}>🪙 Últimos movimientos</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {movements.slice(0, 10).map((m, i) => (
+                  {movements.slice(0, 10).map((m: any, i: number) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: cardInner, borderRadius: 8 }}>
                       <div>
                         <p style={{ fontSize: 11, color: text, fontWeight: 600, margin: '0 0 1px' }}>{m.storeName}</p>
@@ -451,16 +502,14 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-
             {events.length > 0 && movements.length > 0 && (
               <div style={{ borderTop: `1px solid ${border}`, marginBottom: 12 }} />
             )}
-
             {events.length > 0 && (
               <div>
                 <p style={{ fontSize: 10, color: textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 8px' }}>🔔 Alertas</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {events.slice(0, 8).map((e, i) => (
+                  {events.slice(0, 8).map((e: any, i: number) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                       <span style={{ width: 7, height: 7, borderRadius: '50%', marginTop: 4, flexShrink: 0, background: e.event === 'online' ? '#22c55e' : '#ef4444', display: 'inline-block' }} />
                       <div>
@@ -474,7 +523,6 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-
             {events.length === 0 && movements.length === 0 && (
               <p style={{ color: textMuted, fontSize: 12, textAlign: 'center', padding: '20px 0' }}>Sin actividad reciente</p>
             )}
