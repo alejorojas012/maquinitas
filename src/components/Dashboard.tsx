@@ -424,7 +424,8 @@ export default function Dashboard() {
                         transition: 'transform 0.15s',
                       }}
                       onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
-                      onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
+                      onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}
+                      role="button" tabIndex={0}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                         <div>
@@ -570,3 +571,4 @@ export default function Dashboard() {
     </div>
   )
 }
+
