@@ -4,12 +4,12 @@ import { useMachines, useStats, useBestStore, useMachineStats, useActivity, useR
 import axios from 'axios'
 
 function fmt(n: any) {
-  if (n == null) return 'â€”'
+  if (n == null) return '—'
   return Number(n).toLocaleString('es-CO')
 }
 
 function timeAgo(iso: string) {
-  if (!iso) return 'â€”'
+  if (!iso) return '—'
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
   if (diff < 60) return 'Hace un momento'
   if (diff < 3600) return `Hace ${Math.floor(diff / 60)}m`
@@ -18,7 +18,7 @@ function timeAgo(iso: string) {
 }
 
 function SignalBar({ csq, dark }: { csq: number | null, dark: boolean }) {
-  if (csq == null) return <span style={{ color: dark ? '#475569' : '#94a3b8', fontSize: 11 }}>Sin seÃ±al</span>
+  if (csq == null) return <span style={{ color: dark ? '#475569' : '#94a3b8', fontSize: 11 }}>Sin señal</span>
   const pct = Math.min(100, Math.round((csq / 31) * 100))
   const color = pct > 66 ? '#22c55e' : pct > 33 ? '#f59e0b' : '#ef4444'
   return (
@@ -108,8 +108,8 @@ export default function Dashboard() {
       const data = r.data?.movements || []
       const ws = XLSX.utils.json_to_sheet(data.map((m: any) => ({
         'Fecha': m.fecha, 'Hora': m.hora, 'Tienda': m.tienda,
-        'CÃ³digo': m.codigo, 'Tokens': m.tokens,
-        'FacturaciÃ³n COP': m.facturacion, 'MÃ©todo de Pago': m.metodoPago,
+        'Código': m.codigo, 'Tokens': m.tokens,
+        'Facturación COP': m.facturacion, 'Método de Pago': m.metodoPago,
       })))
       const wb = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(wb, ws, 'Movimientos')
@@ -165,33 +165,33 @@ export default function Dashboard() {
             <img src="/icon-maquinitas.png" alt="logo" style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'contain' }} />
             <div>
               <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0, color: text }}>Maquinitas</h1>
-              <p style={{ fontSize: 11, color: textMuted, margin: 0 }}>gb.starthing.com · v3</p>
+              <p style={{ fontSize: 11, color: textMuted, margin: 0 }}>gb.starthing.com</p>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
               style={{ padding: '6px 10px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: text, fontSize: 12 }} />
-            <span style={{ color: textMuted }}>â€”</span>
+            <span style={{ color: textMuted }}>—</span>
             <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
               style={{ padding: '6px 10px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: text, fontSize: 12 }} />
-            <button onClick={reload} style={{ padding: '6px 16px', borderRadius: 8, background: '#22c55e', color: '#000', border: 'none', fontSize: 12, cursor: 'pointer', userSelect: 'none', fontWeight: 600 }}>
-              â†» Actualizar
+            <button onClick={reload} style={{ padding: '6px 16px', borderRadius: 8, background: '#22c55e', color: '#000', border: 'none', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+              ↻ Actualizar
             </button>
             <button onClick={() => setShowExport(true)}
               style={{ padding: '6px 16px', borderRadius: 8, background: card, color: textSub, border: `1px solid ${border}`, fontSize: 12, cursor: 'pointer' }}>
-              ðŸ“¥ Historial
+              📥 Historial
             </button>
-            <div onClick={() => setDark(!dark)} style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center' }}>
+            <div onClick={() => setDark(!dark)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
               <div style={{ width: 36, height: 20, borderRadius: 99, padding: 2, background: dark ? '#334155' : '#cbd5e1', display: 'flex', alignItems: 'center', transition: 'background 0.2s' }}>
                 <div style={{ width: 16, height: 16, borderRadius: '50%', background: dark ? '#f8fafc' : '#0f172a', transform: dark ? 'translateX(16px)' : 'translateX(0)', transition: 'transform 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>
-                  {dark ? 'ðŸŒ™' : 'â˜€ï¸'}
+                  {dark ? '🌙' : '☀️'}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Modal movimientos por mÃ¡quina */}
+        {/* Modal movimientos por máquina */}
         {selectedMachine && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
             onClick={() => setSelectedMachine(null)}>
@@ -200,26 +200,26 @@ export default function Dashboard() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div>
                   <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 2px', color: text }}>{selectedMachine.storeName}</h2>
-                  <p style={{ fontSize: 11, color: textMuted, margin: 0 }}>{selectedMachine.equipmentCode} Â· {selectedMachine.machineNumber || 'NO.1'}</p>
+                  <p style={{ fontSize: 11, color: textMuted, margin: 0 }}>{selectedMachine.equipmentCode} · {selectedMachine.machineNumber || 'NO.1'}</p>
                 </div>
-                <button onClick={() => setSelectedMachine(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', userSelect: 'none', color: textMuted, fontSize: 24, lineHeight: 1 }}>Ã—</button>
+                <button onClick={() => setSelectedMachine(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 24, lineHeight: 1 }}>×</button>
               </div>
 
-              {/* Estado y seÃ±al */}
+              {/* Estado y señal */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
                 <div style={{ background: cardInner, borderRadius: 10, padding: '10px 12px' }}>
                   <p style={{ fontSize: 10, color: textMuted, margin: '0 0 4px', textTransform: 'uppercase' }}>Estado</p>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: selectedMachine.online ? '#22c55e' : '#ef4444' }}>
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: selectedMachine.online ? '#22c55e' : '#ef4444', display: 'inline-block' }} />
-                    {selectedMachine.online ? 'En lÃ­nea' : 'Offline'}
+                    {selectedMachine.online ? 'En línea' : 'Offline'}
                   </span>
                 </div>
                 <div style={{ background: cardInner, borderRadius: 10, padding: '10px 12px' }}>
-                  <p style={{ fontSize: 10, color: textMuted, margin: '0 0 4px', textTransform: 'uppercase' }}>SeÃ±al</p>
+                  <p style={{ fontSize: 10, color: textMuted, margin: '0 0 4px', textTransform: 'uppercase' }}>Señal</p>
                   <SignalBar csq={selectedMachine.csq} dark={dark} />
                 </div>
                 <div style={{ background: cardInner, borderRadius: 10, padding: '10px 12px' }}>
-                  <p style={{ fontSize: 10, color: textMuted, margin: '0 0 4px', textTransform: 'uppercase' }}>Ãšltima sync</p>
+                  <p style={{ fontSize: 10, color: textMuted, margin: '0 0 4px', textTransform: 'uppercase' }}>Última sync</p>
                   <p style={{ fontSize: 12, color: text, margin: 0, fontWeight: 500 }}>{timeAgo(selectedMs.lastSeen)}</p>
                 </div>
                 <div style={{ background: cardInner, borderRadius: 10, padding: '10px 12px' }}>
@@ -249,7 +249,7 @@ export default function Dashboard() {
                     </p>
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>FacturaciÃ³n</p>
+                    <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Facturación</p>
                     <p style={{ fontSize: 22, fontWeight: 800, color: text, margin: 0 }}>
                       ${fmt(machineMovements.reduce((a: number, m: any) => a + m.tokens, 0) * 10000)}
                     </p>
@@ -262,7 +262,7 @@ export default function Dashboard() {
               )}
 
               {/* Lista movimientos */}
-              <p style={{ fontSize: 11, color: textMuted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 1 }}>ðŸª™ Movimientos de hoy</p>
+              <p style={{ fontSize: 11, color: textMuted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 1 }}>🪙 Movimientos de hoy</p>
               {machineMovements.length === 0 ? (
                 <p style={{ color: textMuted, fontSize: 13, textAlign: 'center', padding: '16px 0' }}>Sin movimientos hoy</p>
               ) : (
@@ -271,12 +271,12 @@ export default function Dashboard() {
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: cardInner, borderRadius: 8 }}>
                       <div>
                         <p style={{ fontSize: 12, color: text, fontWeight: 500, margin: '0 0 1px' }}>
-                          {m.created ? new Date(m.created.replace(' ', 'T') + 'Z').toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : 'â€”'}
+                          {m.created ? new Date(m.created.replace(' ', 'T') + 'Z').toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : '—'}
                         </p>
                         <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>Efectivo</p>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontSize: 14, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} ðŸª™</p>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} 🪙</p>
                         <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>${fmt(m.amount * 1000)}</p>
                       </div>
                     </div>
@@ -292,8 +292,8 @@ export default function Dashboard() {
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
             <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 16, padding: 24, width: '100%', maxWidth: 400, margin: '0 16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: text }}>ðŸ“¥ Descargar Historial</h2>
-                <button onClick={() => setShowExport(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', userSelect: 'none', color: textMuted, fontSize: 24, lineHeight: 1 }}>Ã—</button>
+                <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: text }}>📥 Descargar Historial</h2>
+                <button onClick={() => setShowExport(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 24, lineHeight: 1 }}>×</button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div>
@@ -318,21 +318,21 @@ export default function Dashboard() {
                 </div>
                 <button onClick={downloadExcel} disabled={exporting}
                   style={{ padding: '10px', borderRadius: 8, background: '#22c55e', color: '#000', border: 'none', fontSize: 13, cursor: exporting ? 'not-allowed' : 'pointer', fontWeight: 600, marginTop: 8, opacity: exporting ? 0.7 : 1 }}>
-                  {exporting ? 'â³ Generando...' : 'ðŸ“¥ Descargar Excel'}
+                  {exporting ? '⏳ Generando...' : '📥 Descargar Excel'}
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* MÃ©tricas top */}
+        {/* Métricas top */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 }}>
           {[
-            { label: 'Total MÃ¡quinas', value: machines.length, icon: 'ðŸ–¥ï¸' },
-            { label: 'En LÃ­nea', value: onlineCount, icon: 'ðŸŸ¢', color: '#22c55e' },
-            { label: 'Desconectadas', value: offlineCount, icon: 'ðŸ”´', color: offlineCount > 0 ? '#ef4444' : textMuted },
-            { label: 'Tokens Hoy', value: fmt(totalTokensHoy), icon: 'ðŸª™', color: '#22c55e' },
-            { label: 'Tokens Mes', value: fmt(totalTokensMes), icon: 'ðŸ“…' },
+            { label: 'Total Máquinas', value: machines.length, icon: '🖥️' },
+            { label: 'En Línea', value: onlineCount, icon: '🟢', color: '#22c55e' },
+            { label: 'Desconectadas', value: offlineCount, icon: '🔴', color: offlineCount > 0 ? '#ef4444' : textMuted },
+            { label: 'Tokens Hoy', value: fmt(totalTokensHoy), icon: '🪙', color: '#22c55e' },
+            { label: 'Tokens Mes', value: fmt(totalTokensMes), icon: '📅' },
           ].map((s, i) => (
             <div key={i} style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: '12px 14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
@@ -344,30 +344,30 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* FacturaciÃ³n + Mejor punto */}
+        {/* Facturación + Mejor punto */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 20 }}>
           <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: '14px 16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <span style={{ fontSize: 11, color: textMuted }}>ðŸ’° FacturaciÃ³n Hoy</span>
-              <button onClick={() => setHideAmounts(!hideAmounts)} style={{ background: 'none', border: 'none', cursor: 'pointer', userSelect: 'none', color: textMuted, fontSize: 14, padding: 0 }}>
-                {hideAmounts ? 'ðŸ‘ï¸' : 'ðŸ™ˆ'}
+              <span style={{ fontSize: 11, color: textMuted }}>💰 Facturación Hoy</span>
+              <button onClick={() => setHideAmounts(!hideAmounts)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 14, padding: 0 }}>
+                {hideAmounts ? '👁️' : '🙈'}
               </button>
             </div>
             <p style={{ fontSize: 24, fontWeight: 700, margin: 0, color: '#22c55e' }}>
-              {hideAmounts ? 'â€¢â€¢â€¢â€¢â€¢â€¢' : '$' + fmt(totalAmount)}
+              {hideAmounts ? '••••••' : '$' + fmt(totalAmount)}
             </p>
             <p style={{ fontSize: 11, color: textMuted, margin: '2px 0 0' }}>COP</p>
           </div>
           <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: '14px 16px' }}>
-            <p style={{ fontSize: 11, color: textMuted, margin: '0 0 6px' }}>ðŸ† Mejor Punto â€” Mes</p>
-            <p style={{ fontSize: 16, fontWeight: 700, color: text, margin: '0 0 2px' }}>{bestMonth?.storeName || 'â€”'}</p>
+            <p style={{ fontSize: 11, color: textMuted, margin: '0 0 6px' }}>🏆 Mejor Punto — Mes</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: text, margin: '0 0 2px' }}>{bestMonth?.storeName || '—'}</p>
             <p style={{ fontSize: 22, fontWeight: 800, color: '#22c55e', margin: 0 }}>
               {fmt(parseInt(bestMonth?.offlineOutCoinSum || '0'))} <span style={{ fontSize: 12, fontWeight: 400, color: textMuted }}>tokens</span>
             </p>
           </div>
           <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: '14px 16px' }}>
-            <p style={{ fontSize: 11, color: textMuted, margin: '0 0 6px' }}>ðŸ“ˆ Mejor Punto â€” Ayer</p>
-            <p style={{ fontSize: 16, fontWeight: 700, color: text, margin: '0 0 2px' }}>{bestYesterday?.storeName || 'â€”'}</p>
+            <p style={{ fontSize: 11, color: textMuted, margin: '0 0 6px' }}>📈 Mejor Punto — Ayer</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: text, margin: '0 0 2px' }}>{bestYesterday?.storeName || '—'}</p>
             <p style={{ fontSize: 22, fontWeight: 800, color: '#22c55e', margin: 0 }}>
               {fmt(parseInt(bestYesterday?.offlineOutCoinSum || '0'))} <span style={{ fontSize: 12, fontWeight: 400, color: textMuted }}>tokens</span>
             </p>
@@ -381,19 +381,19 @@ export default function Dashboard() {
             <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
               {(['machines', 'stores'] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)}
-                  style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${border}`, fontSize: 12, cursor: 'pointer', userSelect: 'none',
+                  style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${border}`, fontSize: 12, cursor: 'pointer',
                     background: tab === t ? '#22c55e' : card, color: tab === t ? '#000' : textSub, fontWeight: tab === t ? 600 : 400 }}>
-                  {t === 'machines' ? `MÃ¡quinas (${machines.length})` : 'Tiendas'}
+                  {t === 'machines' ? `Máquinas (${machines.length})` : 'Tiendas'}
                 </button>
               ))}
               {tab === 'machines' && (
                 <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
                   {(['all', 'online', 'offline'] as const).map(f => (
                     <button key={f} onClick={() => setFilter(f)}
-                      style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${border}`, fontSize: 11, cursor: 'pointer', userSelect: 'none',
+                      style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${border}`, fontSize: 11, cursor: 'pointer',
                         background: filter === f ? border : 'transparent',
                         color: f === 'online' ? '#22c55e' : f === 'offline' ? '#ef4444' : textSub }}>
-                      {f === 'all' ? `Todas ${machines.length}` : f === 'online' ? `En lÃ­nea ${onlineCount}` : `Offline ${offlineCount}`}
+                      {f === 'all' ? `Todas ${machines.length}` : f === 'online' ? `En línea ${onlineCount}` : `Offline ${offlineCount}`}
                     </button>
                   ))}
                 </div>
@@ -402,7 +402,7 @@ export default function Dashboard() {
 
             {loadingM && <p style={{ color: textMuted, fontSize: 13 }}>Cargando...</p>}
 
-            {/* Tarjetas mÃ¡quinas */}
+            {/* Tarjetas máquinas */}
             {tab === 'machines' && !loadingM && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
                 {filteredMachines.map((m, i) => {
@@ -420,7 +420,7 @@ export default function Dashboard() {
                         border: `1px solid ${!isActive ? border : m.online ? '#1a3a2a' : '#3a1a1a'}`,
                         borderRadius: 12, padding: '14px',
                         opacity: isActive ? 1 : 0.6,
-                        cursor: 'pointer', userSelect: 'none',
+                        cursor: 'pointer',
                         transition: 'transform 0.15s',
                       }}
                       onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
@@ -429,11 +429,11 @@ export default function Dashboard() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                         <div>
                           <p style={{ fontSize: 14, fontWeight: 700, color: text, margin: '0 0 2px' }}>{m.storeName}</p>
-                          <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>{m.equipmentCode} Â· {m.machineNumber || 'NO.1'}</p>
+                          <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>{m.equipmentCode} · {m.machineNumber || 'NO.1'}</p>
                         </div>
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, background: m.online ? '#0d2818' : '#2a0d0d', color: m.online ? '#22c55e' : '#ef4444' }}>
                           <span style={{ width: 5, height: 5, borderRadius: '50%', background: m.online ? '#22c55e' : '#ef4444', display: 'inline-block' }} />
-                          {m.online ? 'En lÃ­nea' : 'Offline'}
+                          {m.online ? 'En línea' : 'Offline'}
                         </span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
@@ -448,11 +448,11 @@ export default function Dashboard() {
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11 }}>
-                          <span style={{ color: textMuted }}>SeÃ±al</span>
+                          <span style={{ color: textMuted }}>Señal</span>
                           <SignalBar csq={m.csq} dark={dark} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
-                          <span style={{ color: textMuted }}>Ãšltima sync</span>
+                          <span style={{ color: textMuted }}>Última sync</span>
                           <span style={{ color: textSub }}>{timeAgo(ms.lastSeen)}</span>
                         </div>
                         {!m.online && ms.offlineSince && (
@@ -469,10 +469,10 @@ export default function Dashboard() {
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
                           <span style={{ color: textMuted }}>Red</span>
-                          <span style={{ color: textSub }}>{m.networkType || 'â€”'}</span>
+                          <span style={{ color: textSub }}>{m.networkType || '—'}</span>
                         </div>
                         <div style={{ borderTop: `1px solid ${border}`, paddingTop: 8, marginTop: 4, display: 'flex', justifyContent: 'center' }}>
-                          <span style={{ fontSize: 10, color: textMuted }}>Toca para ver movimientos â†’</span>
+                          <span style={{ fontSize: 10, color: textMuted }}>Toca para ver movimientos →</span>
                         </div>
                       </div>
                     </div>
@@ -496,10 +496,10 @@ export default function Dashboard() {
                   <tbody>
                     {stats.map((r, i) => (
                       <tr key={i} style={{ borderBottom: `1px solid ${cardInner}` }}>
-                        <td style={{ padding: '10px 14px', fontWeight: 500, color: text }}>{r.storeName || 'â€”'}</td>
+                        <td style={{ padding: '10px 14px', fontWeight: 500, color: text }}>{r.storeName || '—'}</td>
                         <td style={{ padding: '10px 14px', textAlign: 'right', color: '#22c55e', fontWeight: 600 }}>{fmt(r.offlineOutCoinSum || 0)}</td>
                         <td style={{ padding: '10px 14px', textAlign: 'right', color: text }}>
-                          {hideAmounts ? 'â€¢â€¢â€¢â€¢' : '$' + fmt(parseInt(r.offlineOutCoinSum || '0') * 10000)}
+                          {hideAmounts ? '••••' : '$' + fmt(parseInt(r.offlineOutCoinSum || '0') * 10000)}
                         </td>
                         <td style={{ padding: '10px 14px', textAlign: 'right', color: textSub }}>${fmt(Math.round(parseFloat(r.totalOfflineAmount || 0)))}</td>
                       </tr>
@@ -507,7 +507,7 @@ export default function Dashboard() {
                   </tbody>
                 </table>
                 {stats.length === 0 && (
-                  <p style={{ color: textMuted, fontSize: 13, padding: '1rem', textAlign: 'center' }}>Sin datos para este perÃ­odo.</p>
+                  <p style={{ color: textMuted, fontSize: 13, padding: '1rem', textAlign: 'center' }}>Sin datos para este período.</p>
                 )}
               </div>
             )}
@@ -516,23 +516,23 @@ export default function Dashboard() {
           {/* Actividad reciente */}
           <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <span style={{ fontSize: 14 }}>âš¡</span>
+              <span style={{ fontSize: 14 }}>⚡</span>
               <p style={{ fontSize: 13, fontWeight: 600, color: text, margin: 0 }}>Actividad Reciente</p>
             </div>
             {movements.length > 0 && (
               <div style={{ marginBottom: 14 }}>
-                <p style={{ fontSize: 10, color: textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 8px' }}>ðŸª™ Ãšltimos movimientos</p>
+                <p style={{ fontSize: 10, color: textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 8px' }}>🪙 Últimos movimientos</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {movements.slice(0, 10).map((m: any, i: number) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: cardInner, borderRadius: 8 }}>
                       <div>
                         <p style={{ fontSize: 11, color: text, fontWeight: 600, margin: '0 0 1px' }}>{m.storeName}</p>
                         <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>
-                          {m.created ? new Date(m.created.replace(' ', 'T') + 'Z').toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : 'â€”'}
+                          {m.created ? new Date(m.created.replace(' ', 'T') + 'Z').toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : '—'}
                         </p>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} ðŸª™</p>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} 🪙</p>
                         <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>${fmt(m.amount * 1000)}</p>
                       </div>
                     </div>
@@ -545,14 +545,14 @@ export default function Dashboard() {
             )}
             {events.length > 0 && (
               <div>
-                <p style={{ fontSize: 10, color: textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 8px' }}>ðŸ”” Alertas</p>
+                <p style={{ fontSize: 10, color: textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 8px' }}>🔔 Alertas</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {events.slice(0, 8).map((e: any, i: number) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                       <span style={{ width: 7, height: 7, borderRadius: '50%', marginTop: 4, flexShrink: 0, background: e.event === 'online' ? '#22c55e' : '#ef4444', display: 'inline-block' }} />
                       <div>
                         <p style={{ fontSize: 12, color: textSub, margin: '0 0 1px' }}>
-                          <strong style={{ color: text }}>{e.storeName}</strong> â€” {e.event === 'online' ? 'reconectada' : 'desconectada'}
+                          <strong style={{ color: text }}>{e.storeName}</strong> — {e.event === 'online' ? 'reconectada' : 'desconectada'}
                         </p>
                         <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>{timeAgo(e.timestamp)}</p>
                       </div>
@@ -570,4 +570,3 @@ export default function Dashboard() {
     </div>
   )
 }
-
