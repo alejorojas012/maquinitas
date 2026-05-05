@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import * as XLSX from 'xlsx'
 import { useMachines, useStats, useBestStore, useMachineStats, useActivity, useRecentActivity, today, yesterday, firstDayOfMonth } from '../hooks/useMachines'
 import axios from 'axios'
