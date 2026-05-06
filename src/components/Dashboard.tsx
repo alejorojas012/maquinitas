@@ -309,8 +309,8 @@ export default function Dashboard() {
         {/* MÃ©tricas top */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 }}>
           {[
-            { label: 'Total MÃ¡quinas', value: machines.length, icon: 'ðŸ–¥ï¸' },
-            { label: 'En LÃ­nea', value: onlineCount, icon: 'ðŸŸ¢', color: '#22c55e' },
+            { label: 'Total MÃ¡quinas', value: machines.length, icon: '' },
+            { label: 'En LÃ­nea', value: onlineCount, icon: '', color: '#22c55e' },
             { label: 'Desconectadas', value: offlineCount, icon: 'ðŸ”´', color: offlineCount > 0 ? '#ef4444' : textMuted },
             { label: 'Tokens Hoy', value: fmt(totalTokensHoy), icon: '🪙', color: '#22c55e' },
             { label: 'Tokens Mes', value: fmt(totalTokensMes), icon: 'ðŸ“…' },
@@ -331,7 +331,7 @@ export default function Dashboard() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
               <span style={{ fontSize: 11, color: textMuted }}>ðŸ’° Facturación Hoy</span>
               <button onClick={() => setHideAmounts(!hideAmounts)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 14, padding: 0 }}>
-                {hideAmounts ? 'ðŸ‘ï¸' : 'ðŸ™ˆ'}
+                {hideAmounts ? 'ðŸ‘ï¸' : ''}
               </button>
             </div>
             <p style={{ fontSize: 24, fontWeight: 700, margin: 0, color: '#22c55e' }}>
