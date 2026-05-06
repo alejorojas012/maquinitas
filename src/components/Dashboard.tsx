@@ -169,7 +169,7 @@ export default function Dashboard() {
             <img src="/icon-maquinitas.png" alt="logo" style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'contain' }} />
             <div>
               <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0, color: text }}>Maquinitas</h1>
-              <p style={{ fontSize: 11, color: textMuted, margin: 0 }}>gb.starthing.com · v4</p>
+              <p style={{ fontSize: 11, color: textMuted, margin: 0 }}>GOHAN</p>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
