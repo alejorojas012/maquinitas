@@ -113,7 +113,7 @@ export default function Dashboard() {
       const ws = XLSX.utils.json_to_sheet(data.map((m: any) => ({
         'Fecha': m.fecha, 'Hora': m.hora, 'Tienda': m.tienda,
         'CÃ³digo': m.codigo, 'Tokens': m.tokens,
-        'FacturaciÃ³n COP': m.facturacion, 'MÃ©todo de Pago': m.metodoPago,
+        'Facturación COP': m.facturacion, 'MÃ©todo de Pago': m.metodoPago,
       })))
       const wb = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(wb, ws, 'Movimientos')
@@ -206,9 +206,9 @@ export default function Dashboard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
           <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 2px', color: text }}>{selectedMachine.storeName}</h2>
-          <p style={{ fontSize: 11, color: textMuted, margin: 0 }}>{selectedMachine.equipmentCode} Â· {selectedMachine.machineNumber || 'NO.1'}</p>
+          <p style={{ fontSize: 11, color: textMuted, margin: 0 }}>{selectedMachine.equipmentCode} · {selectedMachine.machineNumber || 'NO.1'}</p>
         </div>
-        <button onClick={() => setSelectedMachine(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 24, lineHeight: 1 }}>Ã—</button>
+        <button onClick={() => setSelectedMachine(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 24, lineHeight: 1 }}>×</button>
       </div>
 
       {/* Toggle monitoreo */}
@@ -231,7 +231,7 @@ export default function Dashboard() {
             </p>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>FacturaciÃ³n</p>
+            <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Facturación</p>
             <p style={{ fontSize: 22, fontWeight: 800, color: text, margin: 0 }}>
               ${fmt(machineMovements.reduce((a: number, m: any) => a + m.tokens, 0) * 10000)}
             </p>
@@ -244,7 +244,7 @@ export default function Dashboard() {
       )}
 
       {/* Lista movimientos */}
-      <p style={{ fontSize: 11, color: textMuted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 1 }}>ðŸª™ Movimientos de hoy</p>
+      <p style={{ fontSize: 11, color: textMuted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 1 }}>🪙 Movimientos de hoy</p>
       {machineMovements.length === 0 ? (
         <p style={{ color: textMuted, fontSize: 13, textAlign: 'center', padding: '16px 0' }}>Sin movimientos hoy</p>
       ) : (
@@ -258,7 +258,7 @@ export default function Dashboard() {
                 <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>Efectivo</p>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} ðŸª™</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} 🪙</p>
                 <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>${fmt(m.amount * 1000)}</p>
               </div>
             </div>
@@ -274,7 +274,7 @@ export default function Dashboard() {
             <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 16, padding: 24, width: '100%', maxWidth: 400, margin: '0 16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: text }}>ðŸ“¥ Descargar Historial</h2>
-                <button onClick={() => setShowExport(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 24, lineHeight: 1 }}>Ã—</button>
+                <button onClick={() => setShowExport(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 24, lineHeight: 1 }}>×</button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div>
@@ -312,7 +312,7 @@ export default function Dashboard() {
             { label: 'Total MÃ¡quinas', value: machines.length, icon: 'ðŸ–¥ï¸' },
             { label: 'En LÃ­nea', value: onlineCount, icon: 'ðŸŸ¢', color: '#22c55e' },
             { label: 'Desconectadas', value: offlineCount, icon: 'ðŸ”´', color: offlineCount > 0 ? '#ef4444' : textMuted },
-            { label: 'Tokens Hoy', value: fmt(totalTokensHoy), icon: 'ðŸª™', color: '#22c55e' },
+            { label: 'Tokens Hoy', value: fmt(totalTokensHoy), icon: '🪙', color: '#22c55e' },
             { label: 'Tokens Mes', value: fmt(totalTokensMes), icon: 'ðŸ“…' },
           ].map((s, i) => (
             <div key={i} style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: '12px 14px' }}>
@@ -325,11 +325,11 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* FacturaciÃ³n + Mejor punto */}
+        {/* Facturación + Mejor punto */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 20 }}>
           <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: '14px 16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <span style={{ fontSize: 11, color: textMuted }}>ðŸ’° FacturaciÃ³n Hoy</span>
+              <span style={{ fontSize: 11, color: textMuted }}>ðŸ’° Facturación Hoy</span>
               <button onClick={() => setHideAmounts(!hideAmounts)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 14, padding: 0 }}>
                 {hideAmounts ? 'ðŸ‘ï¸' : 'ðŸ™ˆ'}
               </button>
@@ -410,7 +410,7 @@ export default function Dashboard() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                         <div>
                           <p style={{ fontSize: 14, fontWeight: 700, color: text, margin: '0 0 2px' }}>{m.storeName}</p>
-                          <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>{m.equipmentCode} Â· {m.machineNumber || 'NO.1'}</p>
+                          <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>{m.equipmentCode} · {m.machineNumber || 'NO.1'}</p>
                         </div>
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, background: m.online ? '#0d2818' : '#2a0d0d', color: m.online ? '#22c55e' : '#ef4444' }}>
                           <span style={{ width: 5, height: 5, borderRadius: '50%', background: m.online ? '#22c55e' : '#ef4444', display: 'inline-block' }} />
@@ -502,7 +502,7 @@ export default function Dashboard() {
             </div>
             {movements.length > 0 && (
               <div style={{ marginBottom: 14 }}>
-                <p style={{ fontSize: 10, color: textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 8px' }}>ðŸª™ Ãšltimos movimientos</p>
+                <p style={{ fontSize: 10, color: textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 8px' }}>🪙 Ãšltimos movimientos</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {movements.slice(0, 10).map((m: any, i: number) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: cardInner, borderRadius: 8 }}>
@@ -513,7 +513,7 @@ export default function Dashboard() {
                         </p>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} ðŸª™</p>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} 🪙</p>
                         <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>${fmt(m.amount * 1000)}</p>
                       </div>
                     </div>
