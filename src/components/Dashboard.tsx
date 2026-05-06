@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import * as XLSX from 'xlsx'
 import { useMachines, useStats, useBestStore, useMachineStats, useActivity, useRecentActivity, today, yesterday, firstDayOfMonth } from '../hooks/useMachines'
 import axios from 'axios'
@@ -192,101 +192,78 @@ export default function Dashboard() {
         </div>
 
         {/* Modal movimientos por máquina */}
-        {selectedMachine && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
-            onClick={() => setSelectedMachine(null)}>
-            <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 16, padding: 24, width: '100%', maxWidth: 420, margin: '0 16px', maxHeight: '85vh', overflowY: 'auto' }}
-              onClick={e => e.stopPropagation()}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <div>
-                  <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 2px', color: text }}>{selectedMachine.storeName}</h2>
-                  <p style={{ fontSize: 11, color: textMuted, margin: 0 }}>{selectedMachine.equipmentCode} · {selectedMachine.machineNumber || 'NO.1'}</p>
-                </div>
-                <button onClick={() => setSelectedMachine(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 24, lineHeight: 1 }}>×</button>
-              </div>
+{selectedMachine && (
+  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+    onClick={() => setSelectedMachine(null)}>
+    <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 16, padding: 24, width: '100%', maxWidth: 420, margin: '0 16px', maxHeight: '85vh', overflowY: 'auto' }}
+      onClick={e => e.stopPropagation()}>
+      
+      {/* Header modal v2 */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div>
+          <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 2px', color: text }}>{selectedMachine.storeName}</h2>
+          <p style={{ fontSize: 11, color: textMuted, margin: 0 }}>{selectedMachine.equipmentCode} · {selectedMachine.machineNumber || 'NO.1'}</p>
+        </div>
+        <button onClick={() => setSelectedMachine(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 24, lineHeight: 1 }}>×</button>
+      </div>
 
-              {/* Estado y señal */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-                <div style={{ background: cardInner, borderRadius: 10, padding: '10px 12px' }}>
-                  <p style={{ fontSize: 10, color: textMuted, margin: '0 0 4px', textTransform: 'uppercase' }}>Estado</p>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: selectedMachine.online ? '#22c55e' : '#ef4444' }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: selectedMachine.online ? '#22c55e' : '#ef4444', display: 'inline-block' }} />
-                    {selectedMachine.online ? 'En línea' : 'Offline'}
-                  </span>
-                </div>
-                <div style={{ background: cardInner, borderRadius: 10, padding: '10px 12px' }}>
-                  <p style={{ fontSize: 10, color: textMuted, margin: '0 0 4px', textTransform: 'uppercase' }}>Señal</p>
-                  <SignalBar csq={selectedMachine.csq} dark={dark} />
-                </div>
-                <div style={{ background: cardInner, borderRadius: 10, padding: '10px 12px' }}>
-                  <p style={{ fontSize: 10, color: textMuted, margin: '0 0 4px', textTransform: 'uppercase' }}>Última sync</p>
-                  <p style={{ fontSize: 12, color: text, margin: 0, fontWeight: 500 }}>{timeAgo(selectedMs.lastSeen)}</p>
-                </div>
-                <div style={{ background: cardInner, borderRadius: 10, padding: '10px 12px' }}>
-                  <p style={{ fontSize: 10, color: textMuted, margin: '0 0 4px', textTransform: 'uppercase' }}>Desconexiones mes</p>
-                  <p style={{ fontSize: 12, margin: 0, fontWeight: 600, color: selectedMs.disconnectionsThisMonth > 0 ? '#f59e0b' : textMuted }}>
-                    {selectedMs.disconnectionsThisMonth || 0}
-                  </p>
-                </div>
-              </div>
+      {/* Toggle monitoreo */}
+      <div style={{ background: cardInner, borderRadius: 10, padding: '12px 14px', marginBottom: 16 }}>
+        <p style={{ fontSize: 10, color: textMuted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 1 }}>🔔 Notificaciones</p>
+        <Toggle
+          active={selectedIsActive}
+          onChange={() => toggleMonitor(selectedMachine.equipmentCode, selectedIsActive)}
+          disabled={toggling === selectedMachine.equipmentCode}
+        />
+      </div>
 
-              {/* Toggle monitoreo */}
-              <div style={{ background: cardInner, borderRadius: 10, padding: '10px 14px', marginBottom: 16 }}>
-                <Toggle
-                  active={selectedIsActive}
-                  onChange={() => toggleMonitor(selectedMachine.equipmentCode, selectedIsActive)}
-                  disabled={toggling === selectedMachine.equipmentCode}
-                />
-              </div>
-
-              {/* Resumen movimientos */}
-              {machineMovements.length > 0 && (
-                <div style={{ background: cardInner, borderRadius: 10, padding: '12px 16px', marginBottom: 14, display: 'flex', justifyContent: 'space-around' }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Total tokens</p>
-                    <p style={{ fontSize: 22, fontWeight: 800, color: '#22c55e', margin: 0 }}>
-                      {machineMovements.reduce((a: number, m: any) => a + m.tokens, 0)}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Facturación</p>
-                    <p style={{ fontSize: 22, fontWeight: 800, color: text, margin: 0 }}>
-                      ${fmt(machineMovements.reduce((a: number, m: any) => a + m.tokens, 0) * 10000)}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Transacciones</p>
-                    <p style={{ fontSize: 22, fontWeight: 800, color: text, margin: 0 }}>{machineMovements.length}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Lista movimientos */}
-              <p style={{ fontSize: 11, color: textMuted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 1 }}>🪙 Movimientos de hoy</p>
-              {machineMovements.length === 0 ? (
-                <p style={{ color: textMuted, fontSize: 13, textAlign: 'center', padding: '16px 0' }}>Sin movimientos hoy</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {machineMovements.map((m: any, i: number) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: cardInner, borderRadius: 8 }}>
-                      <div>
-                        <p style={{ fontSize: 12, color: text, fontWeight: 500, margin: '0 0 1px' }}>
-                          {m.created ? new Date(m.created.replace(' ', 'T') + 'Z').toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : '—'}
-                        </p>
-                        <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>Efectivo</p>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontSize: 14, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} 🪙</p>
-                        <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>${fmt(m.amount * 1000)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+      {/* Resumen movimientos */}
+      {machineMovements.length > 0 && (
+        <div style={{ background: cardInner, borderRadius: 10, padding: '12px 16px', marginBottom: 14, display: 'flex', justifyContent: 'space-around' }}>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Total tokens</p>
+            <p style={{ fontSize: 22, fontWeight: 800, color: '#22c55e', margin: 0 }}>
+              {machineMovements.reduce((a: number, m: any) => a + m.tokens, 0)}
+            </p>
           </div>
-        )}
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Facturación</p>
+            <p style={{ fontSize: 22, fontWeight: 800, color: text, margin: 0 }}>
+              ${fmt(machineMovements.reduce((a: number, m: any) => a + m.tokens, 0) * 10000)}
+            </p>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 10, color: textMuted, margin: '0 0 2px', textTransform: 'uppercase' }}>Transacciones</p>
+            <p style={{ fontSize: 22, fontWeight: 800, color: text, margin: 0 }}>{machineMovements.length}</p>
+          </div>
+        </div>
+      )}
 
+      {/* Lista movimientos */}
+      <p style={{ fontSize: 11, color: textMuted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 1 }}>🪙 Movimientos de hoy</p>
+      {machineMovements.length === 0 ? (
+        <p style={{ color: textMuted, fontSize: 13, textAlign: 'center', padding: '16px 0' }}>Sin movimientos hoy</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {machineMovements.map((m: any, i: number) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: cardInner, borderRadius: 8 }}>
+              <div>
+                <p style={{ fontSize: 12, color: text, fontWeight: 500, margin: '0 0 1px' }}>
+                  {m.created ? new Date(m.created.replace(' ', 'T') + 'Z').toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : '—'}
+                </p>
+                <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>Efectivo</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#22c55e', margin: '0 0 1px' }}>+{m.tokens} 🪙</p>
+                <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>${fmt(m.amount * 1000)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+)}
         {/* Modal exportar */}
         {showExport && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
