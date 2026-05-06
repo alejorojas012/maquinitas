@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import * as XLSX from 'xlsx'
 import { useMachines, useStats, useBestStore, useMachineStats, useActivity, useRecentActivity, today, yesterday, firstDayOfMonth } from '../hooks/useMachines'
 import axios from 'axios'
@@ -73,8 +73,8 @@ export default function Dashboard() {
   const [selectedMachine, setSelectedMachine] = useState<any>(null)
 
   const { machines, loading: loadingM, reload } = useMachines()
-  const { stats } = useStats(dateFrom, dateTo)
-  const { stats: statsMonth } = useStats(firstDayOfMonth(), today())
+  const { stats, reload: reloadStats } = useStats(dateFrom, dateTo)
+  const { stats: statsMonth, reload: reloadStatsMonth } = useStats(firstDayOfMonth(), today())
   const { machineStats, reload: reloadStats } = useMachineStats()
   const { events } = useActivity()
   const { movements } = useRecentActivity()
@@ -82,8 +82,12 @@ export default function Dashboard() {
   const { best: bestYesterday } = useBestStore(yesterday(), yesterday())
 
   useEffect(() => {
-    const interval = setInterval(() => { reload() }, 5 * 60 * 1000)
-    return () => clearInterval(interval)
+    const interval = setInterval(() => {  
+      reload()
+    reloadStats()
+    reloadStatsMonth()
+  }, 5 * 60 * 1000)
+  return () => clearInterval(interval)
   }, [])
 
   async function toggleMonitor(code: string, currentActive: boolean) {
