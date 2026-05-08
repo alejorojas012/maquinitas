@@ -146,3 +146,28 @@ export function useRecentActivity() {
   useEffect(() => { load() }, [])
   return { movements, loading, reload: load }
 }
+export function useMachineMovements(machine: any) {
+  const [movements, setMovements] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+
+  async function load() {
+    if (!machine) return
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({
+        equipmentCode: machine.equipmentCode || '',
+        equipmentId: machine.id || '',
+        storeId: machine.storeId || '',
+        machineNumber: machine.machineNumber || '',
+      })
+      const r = await axios.get('/api/machine-movements?' + params.toString())
+      setMovements(r.data?.movements || [])
+    } catch {
+      setMovements([])
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [machine?.equipmentCode])
+  return { movements, loading, reload: load }
+}

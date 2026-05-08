@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react'
 import * as XLSX from 'xlsx'
-import { useMachines, useStats, useBestStore, useMachineStats, useActivity, useMachineMovements, today, yesterday, firstDayOfMonth } from '../hooks/useMachines'
+import { useMachines, useStats, useBestStore, useMachineStats, useActivity, useRecentActivity, useMachineMovements, today, yesterday, firstDayOfMonth } from '../hooks/useMachines'
 import axios from 'axios'
 
 function fmt(n: any) {
@@ -76,6 +76,7 @@ export default function Dashboard() {
   const { stats, reload: reloadStats } = useStats(dateFrom, dateTo)
   const { stats: statsMonth, reload: reloadStatsMonth } = useStats(firstDayOfMonth(), today())
   const { machineStats, reload: reloadMachineStats } = useMachineStats()
+  const { movements } = useRecentActivity()
   const { events } = useActivity()
   const { best: bestMonth } = useBestStore(firstDayOfMonth(), today())
   const { best: bestYesterday } = useBestStore(yesterday(), yesterday())
@@ -139,7 +140,7 @@ export default function Dashboard() {
   const statsMonthByStore: any = {}
   for (const r of statsMonth) statsMonthByStore[r.storeName] = r
 
-  const { movements: machineMovements, loading: loadingMovements } = useMachineMovements(selectedMachine)
+  const { movements: machineMovements } = useMachineMovements(selectedMachine)
 
   const selectedMs = selectedMachine ? machineStats[selectedMachine.equipmentCode] || {} : {}
   const selectedIsActive = selectedMachine
@@ -537,5 +538,8 @@ export default function Dashboard() {
     </div>
   )
 }
+
+
+
 
 
