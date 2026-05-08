@@ -440,9 +440,6 @@ export default function Dashboard() {
                           <span style={{ color: textMuted }}>Red</span>
                           <span style={{ color: textSub }}>{m.networkType || '-'}</span>
                         </div>
-                        <div style={{ borderTop: `1px solid ${border}`, paddingTop: 8, marginTop: 4, textAlign: 'center' }}>
-                          <span style={{ fontSize: 10, color: textMuted }}>Toca para ver movimientos</span>
-                        </div>
                       </div>
                     </div>
                   )
@@ -538,6 +535,7 @@ export default function Dashboard() {
     </div>
   )
 }
+
 
 
 
