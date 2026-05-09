@@ -222,14 +222,6 @@ export default function Dashboard() {
                 </div>
                 <button onClick={() => setSelectedMachine(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, fontSize: 24, lineHeight: 1 }}>x</button>
               </div>
-              <div style={{ background: cardInner, borderRadius: 10, padding: '12px 14px', marginBottom: 16 }}>
-                <p style={{ fontSize: 10, color: textMuted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 1 }}>Notificaciones</p>
-                <Toggle
-                  active={selectedIsActive}
-                  onChange={() => toggleMonitor(selectedMachine.equipmentCode, selectedIsActive)}
-                  disabled={toggling === selectedMachine.equipmentCode}
-                />
-              </div>
               {machineMovements.length > 0 && (
                 <div style={{ background: cardInner, borderRadius: 10, padding: '12px 16px', marginBottom: 14, display: 'flex', justifyContent: 'space-around' }}>
                   <div style={{ textAlign: 'center' }}>
@@ -598,6 +590,7 @@ export default function Dashboard() {
     </div>
   )
 }
+
 
 
 
