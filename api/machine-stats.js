@@ -9,35 +9,39 @@ export default async function handler(req, res) {
     const baseUrl = process.env.KV_REST_API_URL
     const token = process.env.KV_REST_API_TOKEN
 
-    // Leer machines:state via REST directo
     const stateRes = await fetch(`${baseUrl}/get/machines:state`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     const stateData = await stateRes.json()
-    const state = typeof stateData.result === 'string' 
-      ? JSON.parse(stateData.result) 
+    const state = typeof stateData.result === 'string'
+      ? JSON.parse(stateData.result)
       : (stateData.result || {})
 
     const stats = {}
     for (const [code, data] of Object.entries(state)) {
-      // Leer disconnections via REST directo
       const discRes = await fetch(`${baseUrl}/get/disconnections:${code}:${monthKey}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       const discData = await discRes.json()
       const disconnections = discData.result || 0
 
-      // Leer monitor via REST directo
       const monRes = await fetch(`${baseUrl}/get/monitor:${code}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       const monData = await monRes.json()
       const active = monData.result === null ? true : monData.result === '1'
 
+      const enabledRes = await fetch(`${baseUrl}/get/enabled:${code}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const enabledData = await enabledRes.json()
+      const enabled = enabledData.result === null ? true : enabledData.result === '1'
+
       stats[code] = {
         ...data,
         disconnectionsThisMonth: Number(disconnections),
         active,
+        enabled,
       }
     }
 

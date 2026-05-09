@@ -8,22 +8,21 @@ export default async function handler(req, res) {
     let body = req.body
     if (typeof body === 'string') body = JSON.parse(body)
 
-    const { code, active } = body
+    const { code, active, type } = body
     if (!code) return res.status(400).json({ error: 'code requerido' })
 
+    const kvUrl = process.env.KV_REST_API_URL
+    const kvToken = process.env.KV_REST_API_TOKEN
     const value = active ? '1' : '0'
+    const key = type === 'system' ? `enabled:${code}` : `monitor:${code}`
 
-    // Usar REST directo de Upstash en lugar del SDK
-    const url = `${process.env.KV_REST_API_URL}/set/monitor:${code}/${value}`
+    const url = `${kvUrl}/set/${encodeURIComponent(key)}/${value}`
     const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
-      }
+      headers: { Authorization: `Bearer ${kvToken}` }
     })
-
     const data = await response.json()
 
-    return res.status(200).json({ ok: true, code, active, redis: data })
+    return res.status(200).json({ ok: true, code, active, type, redis: data })
   } catch (e) {
     return res.status(500).json({ error: e.message })
   }
