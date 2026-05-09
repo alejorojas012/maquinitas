@@ -71,6 +71,8 @@ export default function Dashboard() {
   const [exportStore, setExportStore] = useState('all')
   const [exporting, setExporting] = useState(false)
   const [selectedMachine, setSelectedMachine] = useState<any>(null)
+  const [showConfig, setShowConfig] = useState(false)
+  const [togglingSystem, setTogglingSystem] = useState<string | null>(null)
 
   const { machines, loading: loadingM, reload } = useMachines()
   const { stats, reload: reloadStats } = useStats(dateFrom, dateTo)
@@ -89,6 +91,18 @@ export default function Dashboard() {
     }, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
+
+  async function toggleSystem(code: string, currentEnabled: boolean) {
+    const newEnabled = !currentEnabled
+    setTogglingSystem(code)
+    try {
+      await axios.post("/api/toggle-machine", { code, active: newEnabled, type: "system" })
+      await reloadMachineStats()
+    } catch (e) {
+      console.error(e)
+    }
+    setTogglingSystem(null)
+  }
 
   async function toggleMonitor(code: string, currentActive: boolean) {
     const newActive = !currentActive
@@ -123,8 +137,9 @@ export default function Dashboard() {
     setExporting(false)
   }
 
-  const onlineCount = machines.filter(m => m.online).length
-  const offlineCount = machines.filter(m => !m.online).length
+  const enabledMachines = machines.filter(m => (machineStats[m.equipmentCode]?.enabled ?? true))
+  const onlineCount = enabledMachines.filter(m => m.online).length
+  const offlineCount = enabledMachines.filter(m => !m.online).length
   const totalTokensHoy = stats.reduce((a, r) => a + (parseInt(r.offlineOutCoinSum) || 0), 0)
   const totalTokensMes = statsMonth.reduce((a, r) => a + (parseInt(r.offlineOutCoinSum) || 0), 0)
   const totalAmount = totalTokensHoy * 10000
@@ -182,6 +197,9 @@ export default function Dashboard() {
             <button onClick={() => setShowExport(true)}
               style={{ padding: '6px 16px', borderRadius: 8, background: card, color: textSub, border: `1px solid ${border}`, fontSize: 12, cursor: 'pointer' }}>
               Historial
+            </button>
+            <button onClick={() => setShowConfig(true)} style={{ padding: "6px 10px", borderRadius: 8, background: card, color: textSub, border: `1px solid ${border}`, fontSize: 16, cursor: "pointer" }}>
+              ⚙️
             </button>
             <div onClick={() => setDark(!dark)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
               <div style={{ width: 36, height: 20, borderRadius: 99, padding: 2, background: dark ? '#334155' : '#cbd5e1', display: 'flex', alignItems: 'center', transition: 'background 0.2s' }}>
@@ -253,6 +271,51 @@ export default function Dashboard() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Panel configuracion */}
+        {showConfig && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
+            onClick={() => setShowConfig(false)}>
+            <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 16, padding: 24, width: "100%", maxWidth: 500, margin: "0 16px", maxHeight: "85vh", overflowY: "auto" }}
+              onClick={e => e.stopPropagation()}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: text }}>Configuracion</h2>
+                <button onClick={() => setShowConfig(false)} style={{ background: "none", border: "none", cursor: "pointer", color: textMuted, fontSize: 24, lineHeight: 1 }}>x</button>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {machines.map((m, i) => {
+                  const ms = machineStats[m.equipmentCode] || {}
+                  const isActive = localActive[m.equipmentCode] !== undefined ? localActive[m.equipmentCode] : (ms.active === undefined ? true : ms.active === true)
+                  const isEnabled = ms.enabled === undefined ? true : ms.enabled === true
+                  return (
+                    <div key={i} style={{ background: cardInner, borderRadius: 10, padding: "12px 14px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                        <div>
+                          <p style={{ fontSize: 13, fontWeight: 700, color: text, margin: "0 0 2px" }}>{m.storeName}</p>
+                          <p style={{ fontSize: 10, color: textMuted, margin: 0 }}>{m.equipmentCode}</p>
+                        </div>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 99, fontSize: 10, fontWeight: 600, background: m.online ? "#0d2818" : "#2a0d0d", color: m.online ? "#22c55e" : "#ef4444" }}>
+                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: m.online ? "#22c55e" : "#ef4444", display: "inline-block" }} />
+                          {m.online ? "En linea" : "Offline"}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontSize: 11, color: textMuted }}>Notificaciones</span>
+                          <Toggle active={isActive} onChange={() => toggleMonitor(m.equipmentCode, isActive)} disabled={toggling === m.equipmentCode} />
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontSize: 11, color: textMuted }}>Sistema activo</span>
+                          <Toggle active={isEnabled} onChange={() => toggleSystem(m.equipmentCode, isEnabled)} disabled={togglingSystem === m.equipmentCode} />
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
         )}
@@ -535,6 +598,12 @@ export default function Dashboard() {
     </div>
   )
 }
+
+
+
+
+
+
 
 
 
