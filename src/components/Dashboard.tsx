@@ -157,7 +157,6 @@ export default function Dashboard() {
 
   const { movements: machineMovements } = useMachineMovements(selectedMachine)
 
-  const selectedMs = selectedMachine ? machineStats[selectedMachine.equipmentCode] || {} : {}
 
   const bg = dark ? '#060d1a' : '#f1f5f9'
   const card = dark ? '#0d1929' : '#ffffff'
@@ -585,6 +584,7 @@ export default function Dashboard() {
     </div>
   )
 }
+
 
 
 
