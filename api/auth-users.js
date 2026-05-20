@@ -41,17 +41,25 @@ export default async function handler(req, res) {
       if (typeof body === 'string') body = JSON.parse(body)
       const { email, action } = body
 
+      if (action === 'deleted') {
+        await redis.del(`user:${email}`)
+        const emails = await redis.lrange('users:list', 0, -1)
+        const filtered = emails.filter((e: string) => e !== email)
+        await redis.del('users:list')
+        for (const e of filtered) await redis.lpush('users:list', e)
+        return res.status(200).json({ ok: true, action, email })
+      }
+
       const userRaw = await redis.get(`user:${email}`)
       if (!userRaw) return res.status(404).json({ error: 'Usuario no encontrado' })
 
       const user = typeof userRaw === 'string' ? JSON.parse(userRaw) : userRaw
-      user.status = action // 'approved' o 'rejected'
+      user.status = action
       await redis.set(`user:${email}`, JSON.stringify(user))
 
-      // Notificar al usuario
       const mensaje = action === 'approved'
         ? 'Tu solicitud de acceso a Maquinitas fue aprobada. Ya puedes iniciar sesion.'
-        : 'Tu solicitud de acceso a Maquinitas fue rechazada. Contacta al administrador para mas informacion.'
+        : 'Tu solicitud de acceso a Maquinitas fue rechazada. Contacta al administrador.'
 
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
