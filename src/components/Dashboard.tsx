@@ -56,7 +56,16 @@ function Toggle({ active, onChange, disabled }: { active: boolean, onChange: () 
   )
 }
 
-export default function Dashboard() {
+interface DashboardProps {
+  user: any
+  token: string
+  onLogout: () => void
+  onShowAdmin: () => void
+  showAdmin: boolean
+  onHideAdmin: () => void
+}
+
+export default function Dashboard({ user, token, onLogout, onShowAdmin, showAdmin, onHideAdmin }: DashboardProps) {
   const [dateFrom, setDateFrom] = useState(today())
   const [dateTo, setDateTo] = useState(today())
   const [tab, setTab] = useState<'machines' | 'stores'>('machines')
@@ -191,6 +200,14 @@ export default function Dashboard() {
             <button onClick={() => setShowExport(true)}
               style={{ padding: '6px 16px', borderRadius: 8, background: card, color: textSub, border: `1px solid ${border}`, fontSize: 12, cursor: 'pointer' }}>
               Historial
+            </button>
+            {user?.isAdmin && (
+              <button onClick={onShowAdmin} style={{ padding: "6px 10px", borderRadius: 8, background: card, color: textSub, border: `1px solid ${border}`, fontSize: 12, cursor: "pointer" }}>
+                Usuarios
+              </button>
+            )}
+            <button onClick={onLogout} style={{ padding: "6px 12px", borderRadius: 8, background: "transparent", color: "#ef4444", border: "1px solid #ef4444", fontSize: 12, cursor: "pointer" }}>
+              Salir
             </button>
             <button onClick={() => setShowConfig(true)} style={{ padding: "6px 10px", borderRadius: 8, background: card, color: textSub, border: `1px solid ${border}`, fontSize: 16, cursor: "pointer" }}>
               ⚙️
@@ -584,6 +601,9 @@ export default function Dashboard() {
     </div>
   )
 }
+
+
+
 
 
 
