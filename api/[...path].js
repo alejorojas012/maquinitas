@@ -31,7 +31,7 @@ export default async function handler(req, res) {
   const url = new URL(req.url, 'http://localhost')
 
   // Proteger rutas internas
-  const internalRoutes = ['auth', 'check-machines', 'machine-stats', 'toggle-machine', 'activity', 'reset-state']
+  const internalRoutes = ['auth', 'check-machines', 'machine-stats', 'toggle-machine', 'activity', 'reset-state', 'admin-setup']
   const firstSegment = url.pathname.split('/').filter(Boolean)[1]
   if (internalRoutes.includes(firstSegment)) {
     return res.status(404).json({ error: 'Ruta interna' })
