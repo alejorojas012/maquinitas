@@ -58,14 +58,14 @@ function Toggle({ active, onChange, disabled }: { active: boolean, onChange: () 
 
 interface DashboardProps {
   user: any
-  token: string
   onLogout: () => void
   onShowAdmin: () => void
   showAdmin: boolean
   onHideAdmin: () => void
+  token: string
 }
 
-export default function Dashboard({ user, token, onLogout, onShowAdmin, showAdmin, onHideAdmin }: DashboardProps) {
+export default function Dashboard({ user, onLogout, onShowAdmin }: DashboardProps) {
   const [dateFrom, setDateFrom] = useState(today())
   const [dateTo, setDateTo] = useState(today())
   const [tab, setTab] = useState<'machines' | 'stores'>('machines')
@@ -601,6 +601,9 @@ export default function Dashboard({ user, token, onLogout, onShowAdmin, showAdmi
     </div>
   )
 }
+
+
+
 
 
 

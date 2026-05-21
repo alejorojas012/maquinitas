@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import axios from 'axios'
 
 interface Props {
@@ -14,7 +14,6 @@ export default function Login({ onLogin }: Props) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  const dark = true
   const card = '#0d1929'
   const border = '#1e293b'
   const text = '#ffffff'
@@ -89,7 +88,7 @@ export default function Login({ onLogin }: Props) {
             <div>
               <p style={{ fontSize: 11, color: textMuted, margin: '0 0 4px' }}>Contrasena</p>
               <input value={password} onChange={e => setPassword(e.target.value)}
-                type="password" placeholder="••••••••"
+                type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
                 style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `1px solid ${border}`, background: cardInner, color: text, fontSize: 13, boxSizing: 'border-box' }} />
             </div>

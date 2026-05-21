@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import Dashboard from './components/Dashboard'
 import Login from './components/Login'
-import AdminUsers from './components/AdminUsers'
 
 function App() {
   const [token, setToken] = useState<string | null>(null)
