@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       const emails = await redis.lrange('users:list', 0, -1)
       const users = []
       for (const email of emails) {
-        const userRaw = await redis.get(`user:${email}`)
+        const userRaw = await redis.get('user:' + email)
         if (userRaw) {
           const user = typeof userRaw === 'string' ? JSON.parse(userRaw) : userRaw
           users.push({ name: user.name, email: user.email, status: user.status, createdAt: user.createdAt })
@@ -42,45 +42,47 @@ export default async function handler(req, res) {
       const { email, action } = body
 
       if (action === 'deleted') {
-        await redis.del(`user:${email}`)
+        await redis.del('user:' + email)
         const emails = await redis.lrange('users:list', 0, -1)
-        const filtered = emails.filter((e: string) => e !== email)
+        const filtered = emails.filter(function(e) { return e !== email })
         await redis.del('users:list')
         for (const e of filtered) await redis.lpush('users:list', e)
         return res.status(200).json({ ok: true, action, email })
       }
 
-      const userRaw = await redis.get(`user:${email}`)
+      const userRaw = await redis.get('user:' + email)
       if (!userRaw) return res.status(404).json({ error: 'Usuario no encontrado' })
 
       const user = typeof userRaw === 'string' ? JSON.parse(userRaw) : userRaw
       user.status = action
-      await redis.set(`user:${email}`, JSON.stringify(user))
+      await redis.set('user:' + email, JSON.stringify(user))
 
-      const mensaje = action === 'approved'
+      const isApproved = action === 'approved'
+      const subject = isApproved ? 'Acceso aprobado - Maquinitas' : 'Solicitud rechazada - Maquinitas'
+      const mensaje = isApproved
         ? 'Tu solicitud de acceso a Maquinitas fue aprobada. Ya puedes iniciar sesion.'
         : 'Tu solicitud de acceso a Maquinitas fue rechazada. Contacta al administrador.'
+
+      const linkHtml = isApproved
+        ? '<a href="https://maquinitas.vercel.app" style="display:inline-block;background:#22c55e;color:#000;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:12px">Entrar a Maquinitas</a>'
+        : ''
+
+      const color = isApproved ? '#22c55e' : '#ef4444'
+      const titulo = isApproved ? 'Acceso aprobado' : 'Solicitud rechazada'
+
+      const html = '<div style="font-family:sans-serif;max-width:500px;margin:0 auto;background:#0f172a;color:#fff;padding:24px;border-radius:12px">' +
+        '<h2 style="color:' + color + ';margin-top:0">' + titulo + '</h2>' +
+        '<p style="color:#94a3b8">' + mensaje + '</p>' +
+        linkHtml +
+        '</div>'
 
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Authorization': 'Bearer ' + process.env.RESEND_API_KEY,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          from: 'Maquinitas <onboarding@resend.dev>',
-          to: [email],
-          subject: action === 'approved' ? 'Acceso aprobado - Maquinitas' : 'Solicitud rechazada - Maquinitas',
-          html: `
-            <div style="font-family:sans-serif;max-width:500px;margin:0 auto;background:#0f172a;color:#fff;padding:24px;border-radius:12px">
-              <h2 style="color:${action === 'approved' ? '#22c55e' : '#ef4444'};margin-top:0">
-                ${action === 'approved' ? 'Acceso aprobado' : 'Solicitud rechazada'}
-              </h2>
-              <p style="color:#94a3b8">${mensaje}</p>
-              ${action === 'approved' ? `<a href="https://maquinitas.vercel.app" style="display:inline-block;background:#22c55e;color:#000;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:12px">Entrar a Maquinitas</a>` : ''}
-            </div>
-          `,
-        })
+        body: JSON.stringify({ from: 'Maquinitas <onboarding@resend.dev>', to: [email], subject, html })
       })
 
       return res.status(200).json({ ok: true, action, email })
