@@ -63,9 +63,11 @@ interface DashboardProps {
   showAdmin: boolean
   onHideAdmin: () => void
   token: string
+  dark: boolean
+  onDarkChange: (dark: boolean) => void
 }
 
-export default function Dashboard({ user, onLogout, onShowAdmin }: DashboardProps) {
+export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp, onDarkChange }: DashboardProps) {
   const [dateFrom, setDateFrom] = useState(today())
   const [dateTo, setDateTo] = useState(today())
   const [tab, setTab] = useState<'machines' | 'stores'>('machines')
@@ -73,7 +75,7 @@ export default function Dashboard({ user, onLogout, onShowAdmin }: DashboardProp
   const [filter, setFilter] = useState<'all' | 'online' | 'offline'>('all')
   const [toggling, setToggling] = useState<string | null>(null)
   const [localActive, setLocalActive] = useState<Record<string, boolean>>({})
-  const [dark, setDark] = useState(true)
+  const [dark, setDark] = useState(darkProp)
   const [showExport, setShowExport] = useState(false)
   const [exportFrom, setExportFrom] = useState(today())
   const [exportTo, setExportTo] = useState(today())
@@ -212,7 +214,7 @@ export default function Dashboard({ user, onLogout, onShowAdmin }: DashboardProp
             <button onClick={() => setShowConfig(true)} style={{ padding: "6px 10px", borderRadius: 8, background: card, color: textSub, border: `1px solid ${border}`, fontSize: 16, cursor: "pointer" }}>
               ⚙️
             </button>
-            <div onClick={() => setDark(!dark)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <div onClick={() => { setDark(!dark); onDarkChange(!dark) }} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
               <div style={{ width: 36, height: 20, borderRadius: 99, padding: 2, background: dark ? '#334155' : '#cbd5e1', display: 'flex', alignItems: 'center', transition: 'background 0.2s' }}>
                 <div style={{ width: 16, height: 16, borderRadius: '50%', background: dark ? '#f8fafc' : '#0f172a', transform: dark ? 'translateX(16px)' : 'translateX(0)', transition: 'transform 0.2s' }} />
               </div>
@@ -601,6 +603,15 @@ export default function Dashboard({ user, onLogout, onShowAdmin }: DashboardProp
     </div>
   )
 }
+
+
+
+
+
+
+
+
+
 
 
 
