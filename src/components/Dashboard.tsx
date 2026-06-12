@@ -155,7 +155,7 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
   const totalTokensMes = statsMonth.reduce((a, r) => a + (parseInt(r.offlineOutCoinSum) || 0), 0)
   const totalAmount = totalTokensHoy * 10000
 
-  const filteredMachines = machines.filter(m => {
+  const filteredMachines = enabledMachines.filter(m => {
     if (filter === 'online') return m.online
     if (filter === 'offline') return !m.online
     return true
@@ -211,9 +211,11 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
             <button onClick={onLogout} style={{ padding: "6px 12px", borderRadius: 8, background: "transparent", color: "#ef4444", border: "1px solid #ef4444", fontSize: 12, cursor: "pointer" }}>
               Salir
             </button>
-            <button onClick={() => setShowConfig(true)} style={{ padding: "6px 10px", borderRadius: 8, background: card, color: textSub, border: `1px solid ${border}`, fontSize: 16, cursor: "pointer" }}>
-              ⚙️
-            </button>
+            {user?.isAdmin && (
+              <button onClick={() => setShowConfig(true)} style={{ padding: "6px 10px", borderRadius: 8, background: card, color: textSub, border: `1px solid ${border}`, fontSize: 16, cursor: "pointer" }}>
+                ⚙️
+              </button>
+            )}
             <div onClick={() => { setDark(!dark); onDarkChange(!dark) }} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
               <div style={{ width: 36, height: 20, borderRadius: 99, padding: 2, background: dark ? '#334155' : '#cbd5e1', display: 'flex', alignItems: 'center', transition: 'background 0.2s' }}>
                 <div style={{ width: 16, height: 16, borderRadius: '50%', background: dark ? '#f8fafc' : '#0f172a', transform: dark ? 'translateX(16px)' : 'translateX(0)', transition: 'transform 0.2s' }} />
@@ -366,7 +368,7 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
         {/* Metricas top */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 }}>
           {[
-            { label: 'Total Maquinas', value: machines.length },
+            { label: 'Total Maquinas', value: enabledMachines.length },
             { label: 'En Linea', value: onlineCount, color: '#22c55e' },
             { label: 'Desconectadas', value: offlineCount, color: offlineCount > 0 ? '#ef4444' : textMuted },
             { label: 'Tokens Hoy', value: fmt(totalTokensHoy), color: '#22c55e' },
@@ -418,7 +420,7 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
                 <button key={t} onClick={() => setTab(t)}
                   style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${border}`, fontSize: 12, cursor: 'pointer',
                     background: tab === t ? '#22c55e' : card, color: tab === t ? '#000' : textSub, fontWeight: tab === t ? 600 : 400 }}>
-                  {t === 'machines' ? `Maquinas (${machines.length})` : 'Tiendas'}
+                  {t === 'machines' ? `Maquinas (${enabledMachines.length})` : 'Tiendas'}
                 </button>
               ))}
               {tab === 'machines' && (
@@ -428,7 +430,7 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
                       style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${border}`, fontSize: 11, cursor: 'pointer',
                         background: filter === f ? border : 'transparent',
                         color: f === 'online' ? '#22c55e' : f === 'offline' ? '#ef4444' : textSub }}>
-                      {f === 'all' ? `Todas ${machines.length}` : f === 'online' ? `En linea ${onlineCount}` : `Offline ${offlineCount}`}
+                      {f === 'all' ? `Todas ${enabledMachines.length}` : f === 'online' ? `En linea ${onlineCount}` : `Offline ${offlineCount}`}
                     </button>
                   ))}
                 </div>
