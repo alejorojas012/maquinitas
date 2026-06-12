@@ -615,6 +615,9 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
                 </div>
               )
             })()}
+          </div>
+
+          {/* Actividad reciente */}
           <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: text, margin: 0 }}>Actividad Reciente</p>
