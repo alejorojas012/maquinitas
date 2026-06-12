@@ -70,7 +70,8 @@ interface DashboardProps {
 export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp, onDarkChange }: DashboardProps) {
   const [dateFrom, setDateFrom] = useState(today())
   const [dateTo, setDateTo] = useState(today())
-  const [tab, setTab] = useState<'machines' | 'stores'>('machines')
+  const [tab, setTab] = useState<'machines' | 'stores' | 'ranking'>('machines')
+  const [rankSort, setRankSort] = useState<'name' | 'tokens'>('tokens')
   const [hideAmounts, setHideAmounts] = useState(false)
   const [filter, setFilter] = useState<'all' | 'online' | 'offline'>('all')
   const [toggling, setToggling] = useState<string | null>(null)
@@ -416,11 +417,11 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
           <div>
             {/* Tabs */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
-              {(['machines', 'stores'] as const).map(t => (
+              {(['machines', 'stores', 'ranking'] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)}
                   style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${border}`, fontSize: 12, cursor: 'pointer',
                     background: tab === t ? '#22c55e' : card, color: tab === t ? '#000' : textSub, fontWeight: tab === t ? 600 : 400 }}>
-                  {t === 'machines' ? `Maquinas (${enabledMachines.length})` : 'Tiendas'}
+                  {t === 'machines' ? `Maquinas (${enabledMachines.length})` : t === 'stores' ? 'Tiendas' : '🏆 Ranking'}
                 </button>
               ))}
               {tab === 'machines' && (
@@ -547,9 +548,73 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
                 )}
               </div>
             )}
-          </div>
-
-          {/* Actividad reciente */}
+            {/* Tabla ranking */}
+            {tab === 'ranking' && (() => {
+              const ranked = [...enabledMachines].map(m => ({
+                name: m.storeName,
+                code: m.equipmentCode,
+                online: m.online,
+                tokensMes: parseInt(statsMonthByStore[m.storeName]?.offlineOutCoinSum || '0'),
+              }))
+              if (rankSort === 'tokens') ranked.sort((a, b) => b.tokensMes - a.tokensMes)
+              else ranked.sort((a, b) => a.name.localeCompare(b.name))
+              return (
+                <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderBottom: `1px solid ${border}`, background: cardInner }}>
+                    <p style={{ margin: 0, fontSize: 12, color: textMuted, fontWeight: 500 }}>Ordenar por:</p>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button onClick={() => setRankSort('tokens')}
+                        style={{ padding: '4px 12px', borderRadius: 6, border: `1px solid ${border}`, fontSize: 11, cursor: 'pointer',
+                          background: rankSort === 'tokens' ? '#22c55e' : 'transparent', color: rankSort === 'tokens' ? '#000' : textSub, fontWeight: rankSort === 'tokens' ? 600 : 400 }}>
+                        Tokens mes
+                      </button>
+                      <button onClick={() => setRankSort('name')}
+                        style={{ padding: '4px 12px', borderRadius: 6, border: `1px solid ${border}`, fontSize: 11, cursor: 'pointer',
+                          background: rankSort === 'name' ? '#22c55e' : 'transparent', color: rankSort === 'name' ? '#000' : textSub, fontWeight: rankSort === 'name' ? 600 : 400 }}>
+                        Nombre
+                      </button>
+                    </div>
+                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                    <thead>
+                      <tr style={{ borderBottom: `1px solid ${border}`, background: cardInner }}>
+                        <th style={{ textAlign: 'center', padding: '8px 10px', color: textMuted, fontWeight: 500, width: 36 }}>#</th>
+                        <th style={{ textAlign: 'left', padding: '8px 14px', color: textMuted, fontWeight: 500 }}>Maquina</th>
+                        <th style={{ textAlign: 'center', padding: '8px 10px', color: textMuted, fontWeight: 500 }}>Estado</th>
+                        <th style={{ textAlign: 'right', padding: '8px 14px', color: textMuted, fontWeight: 500 }}>Tokens mes</th>
+                        <th style={{ textAlign: 'right', padding: '8px 14px', color: textMuted, fontWeight: 500 }}>Valor COP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ranked.map((r, i) => {
+                        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`
+                        const topTokens = ranked[0]?.tokensMes || 1
+                        const barPct = Math.round((r.tokensMes / topTokens) * 100)
+                        return (
+                          <tr key={r.code} style={{ borderBottom: `1px solid ${cardInner}` }}>
+                            <td style={{ padding: '10px 10px', textAlign: 'center', fontSize: i < 3 ? 16 : 12, color: textMuted }}>{medal}</td>
+                            <td style={{ padding: '10px 14px' }}>
+                              <p style={{ margin: '0 0 4px', fontWeight: 600, color: text, fontSize: 12 }}>{r.name}</p>
+                              <div style={{ height: 4, borderRadius: 99, background: border, overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${barPct}%`, background: i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#b45309' : '#22c55e', borderRadius: 99, transition: 'width 0.4s' }} />
+                              </div>
+                            </td>
+                            <td style={{ padding: '10px 10px', textAlign: 'center' }}>
+                              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: r.online ? '#22c55e' : '#ef4444' }} />
+                            </td>
+                            <td style={{ padding: '10px 14px', textAlign: 'right', color: '#22c55e', fontWeight: 700 }}>{fmt(r.tokensMes)}</td>
+                            <td style={{ padding: '10px 14px', textAlign: 'right', color: text }}>{hideAmounts ? '----' : '$' + fmt(r.tokensMes * 10000)}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                  {ranked.length === 0 && (
+                    <p style={{ color: textMuted, fontSize: 13, padding: '1rem', textAlign: 'center' }}>Sin datos.</p>
+                  )}
+                </div>
+              )
+            })()}
           <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: text, margin: 0 }}>Actividad Reciente</p>
