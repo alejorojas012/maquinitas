@@ -547,7 +547,7 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
             )}
 
             {/* Tabla tiendas */}
-            {tab === 'stores' && (\
+            {tab === 'stores' && (
               <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                   <thead>
