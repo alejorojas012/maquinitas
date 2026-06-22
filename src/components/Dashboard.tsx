@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import * as XLSX from 'xlsx'
 import { useMachines, useStats, useBestStore, useMachineStats, useActivity, useRecentActivity, useMachineMovements, today, yesterday, firstDayOfMonth } from '../hooks/useMachines'
 import axios from 'axios'
@@ -91,6 +91,34 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
   const { stats: statsMonth, reload: reloadStatsMonth } = useStats(firstDayOfMonth(), today())
   const { machineStats, reload: reloadMachineStats } = useMachineStats()
   const { movements } = useRecentActivity()
+  const prevMovementsRef = useRef<number>(0)
+
+  // Sonido de moneda al detectar nuevo movimiento
+  useEffect(() => {
+    if (movements.length > prevMovementsRef.current && prevMovementsRef.current !== 0) {
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+        const playTone = (freq: number, start: number, dur: number, gain: number) => {
+          const osc = ctx.createOscillator()
+          const g = ctx.createGain()
+          osc.connect(g)
+          g.connect(ctx.destination)
+          osc.frequency.value = freq
+          osc.type = 'sine'
+          g.gain.setValueAtTime(0, ctx.currentTime + start)
+          g.gain.linearRampToValueAtTime(gain, ctx.currentTime + start + 0.01)
+          g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur)
+          osc.start(ctx.currentTime + start)
+          osc.stop(ctx.currentTime + start + dur)
+        }
+        // Sonido metálico tipo moneda: dos tonos cortos ascendentes
+        playTone(1200, 0,    0.08, 0.4)
+        playTone(1600, 0.06, 0.12, 0.3)
+        playTone(2000, 0.14, 0.10, 0.2)
+      } catch (_) {}
+    }
+    prevMovementsRef.current = movements.length
+  }, [movements.length])
   const { events } = useActivity()
   const { best: bestMonth } = useBestStore(firstDayOfMonth(), today())
   const { best: bestYesterday } = useBestStore(yesterday(), yesterday())
@@ -519,7 +547,7 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
             )}
 
             {/* Tabla tiendas */}
-            {tab === 'stores' && (
+            {tab === 'stores' && (\
               <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                   <thead>
@@ -527,18 +555,16 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
                       <th style={{ textAlign: 'left', padding: '10px 14px', color: textMuted, fontWeight: 500 }}>Tienda</th>
                       <th style={{ textAlign: 'right', padding: '10px 14px', color: textMuted, fontWeight: 500 }}>Tokens</th>
                       <th style={{ textAlign: 'right', padding: '10px 14px', color: textMuted, fontWeight: 500 }}>Total COP</th>
-                      <th style={{ textAlign: 'right', padding: '10px 14px', color: textMuted, fontWeight: 500 }}>Efectivo</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {stats.map((r, i) => (
+                    {[...stats].sort((a, b) => (parseInt(b.offlineOutCoinSum) || 0) - (parseInt(a.offlineOutCoinSum) || 0)).map((r, i) => (
                       <tr key={i} style={{ borderBottom: `1px solid ${cardInner}` }}>
                         <td style={{ padding: '10px 14px', fontWeight: 500, color: text }}>{r.storeName || '-'}</td>
                         <td style={{ padding: '10px 14px', textAlign: 'right', color: '#22c55e', fontWeight: 600 }}>{fmt(r.offlineOutCoinSum || 0)}</td>
                         <td style={{ padding: '10px 14px', textAlign: 'right', color: text }}>
                           {hideAmounts ? '----' : '$' + fmt(parseInt(r.offlineOutCoinSum || '0') * 10000)}
                         </td>
-                        <td style={{ padding: '10px 14px', textAlign: 'right', color: textSub }}>${fmt(Math.round(parseFloat(r.totalOfflineAmount || 0)))}</td>
                       </tr>
                     ))}
                   </tbody>
