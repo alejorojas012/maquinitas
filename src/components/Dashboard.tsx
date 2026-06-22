@@ -90,7 +90,7 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
   const { stats, reload: reloadStats } = useStats(dateFrom, dateTo)
   const { stats: statsMonth, reload: reloadStatsMonth } = useStats(firstDayOfMonth(), today())
   const { machineStats, reload: reloadMachineStats } = useMachineStats()
-  const { movements } = useRecentActivity()
+  const { movements, reload: reloadMovements } = useRecentActivity()
   const prevMovementsRef = useRef<number>(0)
 
   // Sonido de moneda al detectar nuevo movimiento
@@ -119,7 +119,7 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
     }
     prevMovementsRef.current = movements.length
   }, [movements.length])
-  const { events } = useActivity()
+  const { events, reload: reloadEvents } = useActivity()
   const { best: bestMonth } = useBestStore(firstDayOfMonth(), today())
   const { best: bestYesterday } = useBestStore(yesterday(), yesterday())
 
@@ -128,6 +128,9 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
       reload()
       reloadStats()
       reloadStatsMonth()
+      reloadMachineStats()
+      reloadMovements()
+      reloadEvents()
     }, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
@@ -225,7 +228,7 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
             <span style={{ color: textMuted }}>-</span>
             <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
               style={{ padding: '6px 10px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: text, fontSize: 12 }} />
-            <button onClick={reload} style={{ padding: '6px 16px', borderRadius: 8, background: '#22c55e', color: '#000', border: 'none', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+            <button onClick={() => { reload(); reloadStats(); reloadStatsMonth(); reloadMachineStats(); reloadMovements(); reloadEvents() }} style={{ padding: '6px 16px', borderRadius: 8, background: '#22c55e', color: '#000', border: 'none', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
               Actualizar
             </button>
             <button onClick={() => setShowExport(true)}
