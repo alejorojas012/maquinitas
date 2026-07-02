@@ -41,7 +41,11 @@ export function useMachines() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    const interval = setInterval(load, 5 * 60 * 1000) // cada 5 minutos
+    return () => clearInterval(interval)
+  }, [])
   return { machines, loading, error, reload: load }
 }
 
@@ -105,7 +109,11 @@ export function useMachineStats() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    const interval = setInterval(load, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
   return { machineStats, loading, reload: load }
 }
 
@@ -124,7 +132,11 @@ export function useActivity() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    const interval = setInterval(load, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
   return { events, loading, reload: load }
 }
 
@@ -143,7 +155,11 @@ export function useRecentActivity() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    const interval = setInterval(load, 60 * 1000) // cada 1 minuto
+    return () => clearInterval(interval)
+  }, [])
   return { movements, loading, reload: load }
 }
 export function useMachineMovements(machine: any) {
