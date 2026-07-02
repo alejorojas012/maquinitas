@@ -139,7 +139,6 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
             body: cuerpo,
             icon: '/icons/icon-192.png',
             tag: 'maquinitas-movimiento',
-            renotify: true,
           })
         } catch (_) {}
       }
