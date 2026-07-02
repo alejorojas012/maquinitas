@@ -93,9 +93,17 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
   const { movements, reload: reloadMovements } = useRecentActivity()
   const prevMovementsRef = useRef<number>(0)
 
-  // Sonido de moneda al detectar nuevo movimiento
+  // Pedir permiso de notificaciones al montar
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  }, [])
+
+  // Sonido de moneda + notificación del sistema al detectar nuevo movimiento
   useEffect(() => {
     if (movements.length > prevMovementsRef.current && prevMovementsRef.current !== 0) {
+      // Sonido
       try {
         const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
         const playTone = (freq: number, start: number, dur: number, gain: number) => {
@@ -111,11 +119,30 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
           osc.start(ctx.currentTime + start)
           osc.stop(ctx.currentTime + start + dur)
         }
-        // Sonido metálico tipo moneda: dos tonos cortos ascendentes
         playTone(1200, 0,    0.08, 0.4)
         playTone(1600, 0.06, 0.12, 0.3)
         playTone(2000, 0.14, 0.10, 0.2)
       } catch (_) {}
+
+      // Notificación del sistema
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const nuevos = movements.length - prevMovementsRef.current
+        const m = movements[0]
+        const titulo = nuevos === 1
+          ? `🪙 Nuevo movimiento — ${m?.storeName || 'Maquinitas'}`
+          : `🪙 ${nuevos} movimientos nuevos — Maquinitas`
+        const cuerpo = nuevos === 1 && m
+          ? `+${m.tokens} tokens · $${(m.amount * 1000).toLocaleString('es-CO')}`
+          : `Se registraron ${nuevos} movimientos recientes`
+        try {
+          new Notification(titulo, {
+            body: cuerpo,
+            icon: '/icons/icon-192.png',
+            tag: 'maquinitas-movimiento',
+            renotify: true,
+          })
+        } catch (_) {}
+      }
     }
     prevMovementsRef.current = movements.length
   }, [movements.length])
