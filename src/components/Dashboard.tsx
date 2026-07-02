@@ -137,7 +137,6 @@ export default function Dashboard({ user, onLogout, onShowAdmin, dark: darkProp,
         try {
           new Notification(titulo, {
             body: cuerpo,
-            icon: '/icons/icon-192.png',
             tag: 'maquinitas-movimiento',
           })
         } catch (_) {}
