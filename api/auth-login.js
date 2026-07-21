@@ -20,10 +20,13 @@ export default async function handler(req, res) {
 
     const userRaw = await redis.get(`user:${email}`)
     if (!userRaw) {
-      return res.status(401).json({ error: 'Email o contraseÃ±a incorrectos' })
+      return res.status(401).json({ error: 'Email o contraseña incorrectos' })
     }
 
-    const user = typeof userRaw === 'string' ? JSON.parse(userRaw) : userRaw
+    let user = userRaw
+    if (typeof user === 'string') user = JSON.parse(user)
+    if (typeof user === 'object' && user.value) user = typeof user.value === 'string' ? JSON.parse(user.value) : user.value
+    if (typeof user === 'string') user = JSON.parse(user)
 
     if (user.status === 'pending' && email !== process.env.ADMIN_EMAIL) {
       return res.status(403).json({ error: 'Tu cuenta esta pendiente de aprobacion. Te notificaremos cuando el administrador la apruebe.' })
@@ -55,5 +58,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: e.message })
   }
 }
-
-

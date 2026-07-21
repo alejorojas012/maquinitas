@@ -20,7 +20,10 @@ export default async function handler(req, res) {
       for (const email of emails) {
         const userRaw = await redis.get('user:' + email)
         if (userRaw) {
-          const user = typeof userRaw === 'string' ? JSON.parse(userRaw) : userRaw
+          let user = userRaw
+          if (typeof user === 'string') user = JSON.parse(user)
+          if (typeof user === 'object' && user.value) user = typeof user.value === 'string' ? JSON.parse(user.value) : user.value
+          if (typeof user === 'string') user = JSON.parse(user)
           users.push({ name: user.name, email: user.email, status: user.status, createdAt: user.createdAt })
         }
       }
