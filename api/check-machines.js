@@ -100,14 +100,19 @@ export default async function handler(req, res) {
       }
 
       if (wasOnline && !isOnline && active) {
-        newOffline.push(m)
-        await kvIncr(`disconnections:${key}:${monthKey}`)
-        await kvLpush(`history:${key}`, JSON.stringify({ event: 'offline', timestamp: nowIso, storeName: m.storeName }))
-        await kvLtrim(`history:${key}`, 0, 99)
+        if (enHorario) {
+          newOffline.push(m)
+          await kvIncr(`disconnections:${key}:${monthKey}`)
+          await kvLpush(`history:${key}`, JSON.stringify({ event: 'offline', timestamp: nowIso, storeName: m.storeName }))
+          await kvLtrim(`history:${key}`, 0, 99)
+        }
+        // En horario nocturno (1am-6am) no se registra ni cuenta la desconexión
       }
 
       if (!wasOnline && isOnline && active) {
-        newOnline.push(m)
+        if (enHorario) {
+          newOnline.push(m)
+        }
         await kvLpush(`history:${key}`, JSON.stringify({ event: 'online', timestamp: nowIso, storeName: m.storeName }))
         await kvLtrim(`history:${key}`, 0, 99)
       }
